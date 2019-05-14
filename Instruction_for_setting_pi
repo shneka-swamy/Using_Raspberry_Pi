@@ -1,0 +1,28 @@
+Raspberry Pi:
+The 40 pins available on the sides are referred to as the GPIO (General Purpose Input Output)
+
+To configure the IO for receiving general serial input,
+
+1. sudo nano /boot/config.txt
+
+***Then in the config.txt add the following line
+
+enable_uart=1
+Then reboot the system. To check if the change has reflected in the system use,
+
+ls -l /dev
+
+(It should show a serial 0 port ttyS0)
+
+Then unless the port is used for console purpose, all the serial console operations must be removed.
+Use the following commands,
+
+sudo systemctl stop serial-getty@ttyS0.service
+sudo systemctl disable serial-getty@ttyS0.service
+
+Then also remove the line console=serial0,115200  from cmdline file.
+To open the cmdline file use, sudo nano /boot/cmdline.txt
+
+To change the serial input from the ttyS0 port to another port (The bluetooth port) use the resource,
+
+https://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/#Enabling
