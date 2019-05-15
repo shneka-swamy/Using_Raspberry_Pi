@@ -8,6 +8,7 @@ To configure the IO for receiving general serial input,
 ***Then in the config.txt add the following line
 
 enable_uart=1
+(remember that there is no space inbetween)
 Then reboot the system. To check if the change has reflected in the system use,
 
 ls -l /dev
