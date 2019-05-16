@@ -27,3 +27,25 @@ To open the cmdline file use, sudo nano /boot/cmdline.txt
 To change the serial input from the ttyS0 port to another port (The bluetooth port) use the resource,
 
 https://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/#Enabling
+
+-----------------------------------------------------------------------
+
+After the configuration is done the working of the xbee to be connected can be checked by using the XCTU
+Download from : https://www.digi.com/resources/documentation/digidocs/90001526/tasks/t_download_and_install_xctu.htm
+
+It is better to use Windows operating system for this part because many internal setting changes must be done.
+
+For problems in installation or further error in connection use,
+https://www.digi.com/resources/documentation/digidocs/90001526/tasks/t_troubleshooting.htm?tocpath=Troubleshooting%7C_____0
+
+The xbee if not used for a long time must be reset (This can be done using the XCTU (Tools ->reset)) part.
+
+--------------------------------------
+
+Xbee connected to the shield,
+** The xbee connected to the shield will not turn on any LED except for the power LED. Any other LED blinking indicates a fault in the device.
+** The shield when being reset will blink the transmitting signal and occassionaly or at the strting the receiver signal.
+
+For identification of the device properly, 
+All the settings except for the baudrate can be left as same, Ensure that only 9600 is selected in the baudrate for effective identification 
+of the device.
