@@ -3,6 +3,16 @@ XCTU Configutation - two xbee ports
 The power level can be changed to change the distance that the xbee will be transmitting (This change in power can be made in the configuration)
 There are two modes available that the xbee can operate on that is either the API mode or the AT(transperent mode)
 
-To get the console log the xbee must be configured in T mode, for this to be done the API must be disabled in the configuration or the 
-setting.
+To get the console log the xbee must be configured in T mode, for this to be done the API must be disabled (in the serial interfacing section)
+in the configuration or the setting.
+
+Make sure that in the network and security settings section of the API the following have the same value for both the xbee.
+
+CH (channel)
+IP PAN ID
+DH (Destination Address High)
+DL (Destination Address Low)
+MY 16-bit Source Address
+
+
 After doing this the information can be sent from one xbee to another easily.
