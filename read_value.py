@@ -1,5 +1,7 @@
 # This program prints the data received from the other device upon receiving an user input
 # This programis used to used to set the basic operation between two xbee s
+# This program is taken from the basic example provided in the digi website
+
 
 from digi.xbee.devices import XBeeDevice
 
