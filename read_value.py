@@ -1,11 +1,28 @@
-# This program checks if the serial port communication is set properly between the raspberry pi and the xbee hardware.
-# This program is taken from https://www.raspberrypi.org/forums/viewtopic.php?t=172194
+# This program prints the data received from the other device upon receiving an user input
+# This programis used to used to set the basic operation between two xbee s
 
-import serial
-import time
+from digi.xbee.devices import XBeeDevice
 
-ser = serial.Serial("/dev/ttyS0", buadrate= 9600)
+def main():
+    device = XBeeDevice("/dev/ttyS0", 9600)
 
-while True:
-  data = ser.readline()
-  print(data)
+    try:
+        device.open()
+
+        def data_callback(xbee_message):
+            address = xbee_message.remote_device.get_64bit_addr()
+            data = xbee_message.data.decode("utf8")
+            print("The data %s was received" %data)
+
+        device.add_data_received_callback(data_callback)
+
+        print("Waiting for the data...\n")
+        input()
+
+    finally:
+        if device is not None and device.is_open():
+            device.close()
+
+
+if __name__ == '__main__':
+    main()
