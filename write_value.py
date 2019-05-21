@@ -1,5 +1,11 @@
-import serial
-import time
+#This program uses the digi xbee library.
 
-ser = serial.Serial("/dev/ttyS0", buadrate= 9600)
+from digi.xbee.devices import XBeeDevice
+
+device = XBeeDevice("/dev/ttyS0",9600)
+device.open()
+
+#To broadcast the message use
+
+device.send_data_broadcast("Hello Xbee :)")
 
