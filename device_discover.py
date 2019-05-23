@@ -1,4 +1,5 @@
 # This program is used to discover the devices in the nearby area
+# It does not find itself.
 # This program was taken from the example provided by digi xbee devices documentation
 
 
