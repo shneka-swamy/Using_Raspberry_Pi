@@ -48,6 +48,7 @@ def main():
             print(rem)
 
             # This is used to send message to the discovered device
+            # Further iterations can be done to sequentially send the inforamtion to all devices in the range required.
             remote_device = RemoteXBeeDevice(device,XBee64BitAddress.
                                              from_hex_string(rem[0]))
             device.send_data(remote_device,"Hello XBee!!")
