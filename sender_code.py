@@ -12,7 +12,7 @@ def main():
     device.open()
 
     # REquired ???
-    # xbee_list = ["0013A2004102FC32", "0013A2004102FC76"]
+    # xbee_list = ["0013A2004102FC32", "0013A2004102FC76", "0013A20040B31805", "0013A20040B317F6"]
 
     #This broadcast of data is used as the node discovery step.
     device.send_data_broadcast(str(device.get_64bit_addr()))
