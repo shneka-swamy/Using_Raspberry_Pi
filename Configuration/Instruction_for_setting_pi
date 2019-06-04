@@ -49,3 +49,12 @@ Xbee connected to the shield,
 For identification of the device properly, 
 All the settings except for the baudrate can be left as same, Ensure that only 9600 is selected in the baudrate for effective identification 
 of the device.
+
+------------------------------------------
+
+To get the reqired python library by Digi use the command,
+
+pip3 install digi-xbee.
+
+It must be noted that for this to work correctly the system must be able to connect to a secure network (in case an insecure connection is set) and the 
+time must be same as the time in the location (this particular thing is verified by chrome).
