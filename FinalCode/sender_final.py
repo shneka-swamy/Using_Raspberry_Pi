@@ -31,7 +31,7 @@ def create_message(data):
 	return send_list
 
 
-def send_message(send_list):
+def send_message(send_list, alpha):
 
 	device = XBeeDevice("/dev/ttyS0",115200)
 
@@ -44,6 +44,8 @@ def send_message(send_list):
 
     	for j in range(0, len(send_list)):
     	    device.send_data(remote_device, str(send_list[j]))
+        
+        device.send_data(remote_device, str(alpha))
 
     	print("Waiting for final acknowledgement")
 
@@ -70,6 +72,7 @@ def send_final_bit(fs):
 
     for j in the range(0, 5):
     	device.send_data(remote_device, str(fs))
+        device.send_data(remote_device, str('f'))
 
     device.close()
 
@@ -96,11 +99,13 @@ def main():
     j = 0
     set_limit = 1000
 
-    while j < len(send_list):
-    	new_list = send_message(send_list[j:j+set_limit])
-    	j += set_limit
 
-    new_list = send_final_bit(fs)
+    while j < len(send_list):
+    	send_message(send_list[j:j+set_limit], alpha[alpha_limit])
+    	j += set_limit
+        alpha_limit += 1
+
+    send_final_bit(fs)
 
 
 if __name__ == '__main__':
