@@ -25,7 +25,7 @@ def receive_data(device, remote_device, new_list):
                string_val = xbee_message.data.decode().split()
                list_val += string_val
 
-               if len(string_val) == 1 && string_val.is_alpha():
+               if len(string_val) == 1 and string_val.is_alpha():
                 flag = False
                 
 
