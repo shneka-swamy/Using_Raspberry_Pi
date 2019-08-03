@@ -33,9 +33,9 @@ def create_message(data):
 
 def send_message(send_list, alpha):
 
-	device = XBeeDevice("/dev/ttyS0",115200)
+    device = XBeeDevice("/dev/ttyS0",115200)
 
-	remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string
+    remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string
                                    ("0013A2004102FC32"))
 
     device.open() 
@@ -44,8 +44,8 @@ def send_message(send_list, alpha):
 
     	for j in range(0, len(send_list)):
     	    device.send_data(remote_device, str(send_list[j]))
-        
-        device.send_data(remote_device, str(alpha))
+
+    	device.send_data(remote_device, str(alpha))
 
     	print("Waiting for final acknowledgement")
 
@@ -55,7 +55,7 @@ def send_message(send_list, alpha):
 
     		xbee_message = device.read_data()
 
-        print("Entire data received")
+    	print("Entire data received")
 
     finally:
     	device.close()
@@ -63,19 +63,32 @@ def send_message(send_list, alpha):
 
 def send_final_bit(fs):
 
-	device = XBeeDevice("/dev/ttyS0", 115200)
-	
-	remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string
+    print("Entered")
+    
+    device = XBeeDevice("/dev/ttyS0", 115200)
+
+    remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string
                                    ("0013A2004102FC32"))
 
     device.open() 
 
-    for j in the range(0, 5):
-    	device.send_data(remote_device, str(fs))
-        device.send_data(remote_device, str('f'))
+    try:
+        for j in range(0, 5):
+            device.send_data(remote_device, str(fs))
+            device.send_data(remote_device, str('f'))
 
-    device.close()
+        print("Waiting for final acknowledgement")
 
+        xbee_message = device.read_data()
+
+        while xbee_message is None:
+
+            xbee_message = device.read_data()
+
+        print("Entire data received")
+
+    finally:
+    	device.close()
 
 
 def main():
@@ -93,7 +106,7 @@ def main():
 
 
     # The number of packets here is chosen to be 1000 based on the experiments previously conducted
-   	# When the number of values is 1000 the packets are transferred without any loss.
+    # When the number of values is 1000 the packets are transferred without any loss.
 
 
     j = 0
@@ -101,9 +114,10 @@ def main():
 
 
     while j < len(send_list):
+        #send_message(send_list[j:j+10], alpha[alpha_limit])
     	send_message(send_list[j:j+set_limit], alpha[alpha_limit])
     	j += set_limit
-        alpha_limit += 1
+    	alpha_limit += 1
 
     send_final_bit(fs)
 
