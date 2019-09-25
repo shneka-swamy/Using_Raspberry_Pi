@@ -9,7 +9,7 @@
 from digi.xbee.devices import *
 
 def main():
-    device = XBeeDevice("/dev/ttyS0", 9600)
+    device = XBeeDevice("/dev/ttyUSB1", 115200)
 
     try:
         device.open()
