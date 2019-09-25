@@ -8,6 +8,7 @@ class Xbee_Configuration:
 
     def set_comm_baud_rate(self, baud_rate):
         self.ser.baudrate = baud_rate
+        print("Communication baud rate set to %s" % self.ser.baudrate)
 
     def close(self):
         self.ser.close()
@@ -32,22 +33,43 @@ class Xbee_Configuration:
         if not self.verify_response(.5):
             return False
 
+        self.ser.write(b'ATAC\r')
+        if not self.verify_response(.5):
+            return False 
+
         self.ser.write(b'ATCN\r')
 
         return True
     
     
-    def send_tx_data(self):
-        self.ser.write(b'this is a test')
+    def enable_api_mode(self):
+        self.ser.write(b'+++')
+        if not self.verify_response(3):
+            return False 
+
+        self.ser.write(b'ATAP2\r')
+        if not self.verify_response(.5):
+            return False 
+        self.ser.write(b'ATAC\r')
+        if not self.verify_response(.5):
+            return False 
+        self.ser.write(b'ATCN\r')
+
+        return True        
+
 
 def main():
     xbee = Xbee_Configuration()
     if xbee.set_xbee_max_baud():
         print("set max baud")
         xbee.set_comm_baud_rate(250000)
-        time.sleep(1)
+        time.sleep(10)
 
-    xbee.send_tx_data()
+    if xbee.enable_api_mode():
+        print('Entered API Mode')
+    else:
+        print("Failed to enter API mode")
+    xbee.close()
 
 if __name__ == '__main__':
     main()
