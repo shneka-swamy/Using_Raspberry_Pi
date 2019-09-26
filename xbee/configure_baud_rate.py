@@ -3,15 +3,13 @@ import time
 
 class Xbee_Configuration:
     def __init__(self, port_name='/dev/ttyUSB0', baud_rate=115200, timeout=1):
-        self.ser = serial.Serial(port_name, baud_rate, timeout=timeout)
-
+        with serial.Serial(port_name, baud_rate, timeout=timeout) as self.ser:
+            print(self.ser)        
 
     def set_comm_baud_rate(self, baud_rate):
         self.ser.baudrate = baud_rate
         print("Communication baud rate set to %s" % self.ser.baudrate)
 
-    def close(self):
-        self.ser.close()
 
     def verify_response(self, time_delay):
         time.sleep(time_delay)
@@ -59,11 +57,11 @@ class Xbee_Configuration:
 
 
 def main():
-    xbee = Xbee_Configuration()
+    xbee = Xbee_Configuration(port_name='/dev/ttyS0')
     if xbee.set_xbee_max_baud():
         print("set max baud")
         xbee.set_comm_baud_rate(250000)
-        time.sleep(10)
+        time.sleep(5)
 
     if xbee.enable_api_mode():
         print('Entered API Mode')
