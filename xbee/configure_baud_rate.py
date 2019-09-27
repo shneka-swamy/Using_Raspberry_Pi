@@ -23,23 +23,13 @@ class Xbee_Initialization:
                     self.ser.baudrate = baud_rate
                 else:
                     print("Wrong baud rate!")
-                    return
-            
-            if self._enable_api_mode():
-                self.xbee = XBeeDevice(port_name, baud_rate)
-                try:
-                    self.xbee.open()
-                except InvalidOperatingModeException:
-                    print("Reset Device!")
-            else:
-                print("Error Entering API mode")
-                return None
-
-
+    
+    
     def getXbeeDevice(self):
         return self.xbee
 
     def get_baud_rate(self, baud_rate):
+        
         with serial.Serial(self.port_name, baud_rate, timeout=self.timeout) as self.ser:
             self.ser.write(b'+++')
             
@@ -49,8 +39,6 @@ class Xbee_Initialization:
             self.ser.write(b'ATBD\r')
             print(self.ser.readline())
             self.ser.write(b'ATCN\r')
-            if not self._verify_response():
-                return False
 
 
 
