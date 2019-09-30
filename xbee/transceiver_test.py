@@ -6,7 +6,7 @@ from digi.xbee.devices import XBeeDevice
 from digi.xbee.exception import *
 
 
-PORT = "/dev/ttyS0"
+PORT = "/dev/ttyUSB0"
 BAUD_RATE = 250000
 
 

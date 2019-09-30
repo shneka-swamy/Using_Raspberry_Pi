@@ -22,17 +22,18 @@ class Xbee_Initialization:
                     baud_rate = 250000
                     self.ser.baudrate = baud_rate
                 else:
-                    print("Wrong baud rate!")
-    
-    
+                    print("Wrong baud rate! Exitint with Error")i
+                    return
+
+            if self._enable_api_mode():
+                print("Entered API Mode")
+
     def getXbeeDevice(self):
         return self.xbee
 
     def get_baud_rate(self, baud_rate):
-        
         with serial.Serial(self.port_name, baud_rate, timeout=self.timeout) as self.ser:
             self.ser.write(b'+++')
-            
             if not self._verify_response():
                 return False
 
@@ -44,12 +45,10 @@ class Xbee_Initialization:
 
     def _verify_response(self):
         line = self.ser.readline()
-        print(line)
         return b'OK' in line
 
     def _set_xbee_max_baud(self):
         self.ser.write(b'+++')
-        
         if not self._verify_response():
             return False
 
