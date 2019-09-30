@@ -22,11 +22,13 @@ class Xbee_Initialization:
                     baud_rate = 250000
                     self.ser.baudrate = baud_rate
                 else:
-                    print("Wrong baud rate! Exitint with Error")i
+                    print("Wrong baud rate! Exiting with Error")
                     return
 
             if self._enable_api_mode():
                 print("Entered API Mode")
+            else:
+                print("Error entering API Mode")
 
     def getXbeeDevice(self):
         return self.xbee
