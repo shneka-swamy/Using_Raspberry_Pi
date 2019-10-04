@@ -4,7 +4,7 @@ import time
 from digi.xbee.models.status import NetworkDiscoveryStatus
 from digi.xbee.devices import XBeeDevice
 from digi.xbee.exception import *
-
+from digi.xbee.exception import *
 
 PORT = "/dev/ttyUSB0"
 BAUD_RATE = 250000
