@@ -24,7 +24,7 @@ class Xbee:
     def unicast(self,address) -> bool:
         pass
     def broadcast(self) -> bool:
-        self.xbee.send_data(remote_device, "HELLO!")
+        pass
         
     def multicast(self,*addresses) -> bool:
         pass
