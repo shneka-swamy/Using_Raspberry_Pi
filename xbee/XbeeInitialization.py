@@ -21,12 +21,11 @@ class CommunicationError(Error):
         return self.message
 
 
-class XbeeInitalization:
+class XbeeInitialization:
 
     def __init__(self, portName, baudrate):
-        self.serialPort = serial.Serial(portName, baudrate, timeout=self.timeout)
-    def __enter__(self):
-        return self
+        self.serialPort = serial.Serial(portName, baudrate, timeout=10)
+
     def __exit__(self, type, value, traceback):
         print(traceback, value)
         self.serialPort.close()
@@ -38,10 +37,10 @@ class XbeeInitalization:
             raise CommunicationError(message)
 
     def verifyResponse(self):
-        line = self.ser.readline()
+        line = self.serialPort.readline()
         return b'OK' in line
     
-    def getBaudRate(self, baud_rate):
+    def getBaudRate(self):
         try:
             self.write(b'+++')
             self.serialPort.write(b'ATBD\r')
@@ -49,7 +48,7 @@ class XbeeInitalization:
             self.serialPort.write(b'ATCN\r')
             return baud_rate
         except CommunicationError as err:
-            print("Error in getBaudRate caused by: {err}")
+            print(f"Error in getBaudRate caused by: {err}")
             return 
         
 
@@ -74,5 +73,5 @@ class XbeeInitalization:
             self.write(b'ATAC\r')
             self.write(b'ATCN\r')
         except CommunicationError as err:
-            print("Error in setMaxBaud caused by: {err}")
+            print(f"Error in setMaxBaud caused by: {err}")
             return 
