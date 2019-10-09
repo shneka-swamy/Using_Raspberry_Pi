@@ -13,15 +13,14 @@ class CommunicationError(Error):
         message -- explanation of the error
     """
 
-    def __init__(self, expression, message):
-        self.expression = expression
+    def __init__(self, message):
         self.message = message
 
     def __repr__(self):
         return self.message
 
 
-class XbeeInitialization:
+class XbeeInitialization():
 
     def __init__(self, portName, baudrate):
         self.serialPort = serial.Serial(portName, baudrate, timeout=10)
@@ -73,5 +72,5 @@ class XbeeInitialization:
             self.write(b'ATAC\r')
             self.write(b'ATCN\r')
         except CommunicationError as err:
-            print(f"Error in setMaxBaud caused by: {err}")
+            #print(f"Error in setMaxBaud caused by: {err}")
             return 
