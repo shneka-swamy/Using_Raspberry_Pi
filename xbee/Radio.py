@@ -1,37 +1,50 @@
 import traceback
 
+from XbeeInitialization import * 
+from Xbee import *
 
-from xbee.XbeeInitialization import XbeeInitialization
-from xbee.Xbee import Xbee
-
-from digi.xbee.models.status import NetworkDiscoveryStatus
-from digi.xbee.devices import XBeeDevice
-from digi.xbee.exception import *
 import sys
 
-def data_receive_callback(xbee_message):
-    not_used =  xbee_message.data.decode()
+class Radio():
+
+    def __init__(self):
+        self.PORT_NAME = '/dev/ttyUSB0'
+        self.BAUDRATE = 250000
+        self.try_opening()
+
+
+    def try_opening(self):
+        
+        with XbeeInitialization(self.PORT_NAME, 115200) as ser:
+            print(ser.getBaudRate())
 
 def main():
-    print(sys.path)
     PORT_NAME = '/dev/ttyUSB0'
-    BAUDRATE = 250000
-    try:
-        with XBeeDevice(PORT_NAME,BAUDRATE) as xbee:
-            print(xbee.get_node_id())
-    except:
-        traceback.print_last()
-        print("Error opeing device; Configuring baudrate")
+    BAUDRATE = 115200
+    with XbeeInitialization(PORT_NAME, BAUDRATE) as xbee:
+        xbee.setMaxBaud()
+    
+
+"""
         try:
-            with XbeeInitalization(PORT_NAME, BAUDRATE) as commPort:
-                commPort.setMaxBaud()
-                commPort.enableAPIMode()
-        except:
-            traceback.print_last()
+            with Xbee(self.PORT_NAME,self.BAUDRATE) as self.xbee:
+                print(self.xbee.read_deivce_info())
+        except InvalidOperatingModeException:
+            self.xbee.reset()
+            try_opening()
+        """
+"""
+            print("Error opeing device; Configuring baudrate")
+            try:
+                possible_buad_rates = [9600, 56000, 115200, 250000]
+                for rate in possible_buad_rates:
+                    
+            except:
+                #traceback.print_last()
+                print("also error here")
+                pass"""
 
 
-if __name__ == '__main__':
-    main()
 
 
 
