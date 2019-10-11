@@ -23,7 +23,7 @@ class CommunicationError(Error):
 class XbeeInitialization():
 
     def __init__(self, portName, baudrate):
-        self.serialPort = serial.Serial(portName, baudrate, timeout=10)
+        self.serialPort = serial.Serial(portName, baudrate, timeout=5)
 
     def __exit__(self, type, value, traceback):
         print(traceback, value)
@@ -37,22 +37,25 @@ class XbeeInitialization():
 
     def verifyResponse(self):
         line = self.serialPort.readline()
+        print(line)
         return b'OK' in line
     
     def getBaudRate(self):
         try:
+            self.serialPort.flushInput()
             self.write(b'+++')
             self.serialPort.write(b'ATBD\r')
             baud_rate = self.serialPort.readline()
             self.serialPort.write(b'ATCN\r')
             return baud_rate
         except CommunicationError as err:
-            print(f"Error in getBaudRate caused by: {err}")
+            print("Error in getBaudRate caused by: %s"% err)
             return 
         
 
     def setMaxBaud(self):
         try:
+            self.serialPort.flushInput()
             self.write(b'+++')
             #write 250000
             self.write(b'ATBD3D090\r')
@@ -62,11 +65,12 @@ class XbeeInitialization():
             self.serialPort.baudrate = 250000
 
         except CommunicationError as err:
-            print("Error in setMaxBaud caused by: {err}")
+            print("Error in setMaxBaud caused by: %s" %err)
             return 
             
     def enableAPIMode(self):
         try:
+            self.serialPort.flushInput()
             self.write(b'+++')
             self.write(b'ATAP1\r')
             self.write(b'ATWR\r')
