@@ -72,7 +72,7 @@ class XbeeInitialization():
         try:
             self.serialPort.flushInput()
             self.write(b'+++')
-            self.write(b'ATAP1\r')
+            self.write(b'ATAP2\r')
             self.write(b'ATWR\r')
             self.write(b'ATAC\r')
             self.write(b'ATCN\r')
