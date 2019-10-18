@@ -10,7 +10,7 @@ import receive_audio
 
 print ("Starting program")
 # Instantiate an XBee device object.
-local_xbee = XBeeDevice("COM3", 57600)
+local_xbee = XBeeDevice("/dev/ttyS0", 57600)
 #local_xbee.set_sync_ops_timeout(1)
 remote_device = RemoteXBeeDevice(local_xbee, XBee64BitAddress.from_hex_string
                                                 ("0013A2004102FC32"))
