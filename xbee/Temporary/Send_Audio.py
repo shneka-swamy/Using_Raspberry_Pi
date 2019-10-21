@@ -6,11 +6,11 @@ from digi.xbee.util import *
 from digi.xbee.exception import *
 
 import receive_audio
-
+import numpy as np
 
 print ("Starting program")
 # Instantiate an XBee device object.
-local_xbee = XBeeDevice("/dev/ttyS0", 57600)
+local_xbee = XBeeDevice("/dev/ttyS0", 250000)
 #local_xbee.set_sync_ops_timeout(1)
 remote_device = RemoteXBeeDevice(local_xbee, XBee64BitAddress.from_hex_string
                                                 ("0013A2004102FC32"))
@@ -25,14 +25,13 @@ def transmit(data):
         #Sends data asyncronously (remove _async for sync mode)
         local_xbee.send_data(remote_device, data) 
 
-
+        '''
         response = local_xbee.read_data()
-
         while (response == None):
-            print (response)
             response = local_xbee.read_data()
-
-        print ("Received Response!")
+    
+        print ("Received Response: ")
+        '''
 
     except:
         #Designed to open, then close the port.
@@ -72,32 +71,69 @@ def send_audio(chunk_size, audio_file):
                     rate=wf.getframerate(),
                     output=True)
 
+
+    '''
+    f = open('../examples.csv')
+
+    while True:
+        line = f.readline()
+        if not line:
+            break
+
+        transmit(line)
+
+    '''
+    array = []
     #Grabs the first chunk of data.
     data = wf.readframes(CHUNK)
-
+    counter=0
     #Reads data until there is silence from the audio file.
-    while data != '':
+    while data:
         #stream.write(data)
+        array.append(data)
+        counter+=1
+        print(counter,"*")
         data = wf.readframes(CHUNK)
+    
+
+    """Test audio """
+    """
+    data = np.array(data, dtype=np.float32)
+    data= data.astype(np.float32).tostring()
+    pya = pyaudio.PyAudio()
+    stream = pya.open(format=pya.get_format_from_width(1), channels=1,rate=44100, output=True)
+
+    
+    stream.write(data)
+    stream.stop_stream()
+    stream.close()
+    """ 
 
         #Calls the transmit function and passes in a string of data the size of chunk.
-        transmit(str(data))
-
+    for x in range (0, len(array)):
+        if x % 100 == 0:
+            local_xbee.send_data(remote_device, array[x])
+        else:
+            local_xbee.send_data_async(remote_device, array[x])
+        if x >= 1141 and x  <= 1152:
+            print(array[x])
+        #print(x)
         #Simulation for data received by the receiver.
         #receive_audio.receive(data)
 
 
 
-
     stream.stop_stream()
     stream.close()
-
+    print("Done")
     p.terminate()
+    local_xbee.close()
+    exit()
 
 def main():
     #One time open of the xbee instead of opening and closing the xbee.
     local_xbee.open()
-    send_audio(10, "../../AudioFiles/CantinaBand3.wav")
+    send_audio(50, "../../AudioFiles/CantinaBand3.wav")
     
 
 if __name__ == '__main__':
