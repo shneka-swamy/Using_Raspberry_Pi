@@ -10,7 +10,7 @@ import numpy as np
 class receiver:
 
 	def __init__(self):
-		self.data=[]
+		self.data = bytearray()
 		self.counter=1
 
 	def playAudio(self):
@@ -20,16 +20,20 @@ class receiver:
 		stream = pya.open(format=pya.get_format_from_width(1), channels=1, rate=OUTPUT_SAMPLE_RATE, output=True)
 
 		self.data = self.data.astype(np.float32).tostring()
+		print (len(self.data))
 		stream.write(self.data)
 		stream.stop_stream()
 		stream.close()
 
 
 	def data_rec(self,xbee_message):
-		#Add function to play audi  o
+		#Add function to play audio
 		#if xbee_message.data == ""
-		self.data.append(xbee_message.data)
-		print(self.counter)
+		#self.data.append(xbee_message.data)
+		self.data += xbee_message.data
+		# print (xbee_message.data)
+		if (self.counter%10==0):
+			print(self.counter)
 		self.counter+=1
 		if self.counter == 1322:
 			self.playAudio()
