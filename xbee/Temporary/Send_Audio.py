@@ -48,53 +48,47 @@ def transmit(data):
     '''
 
 def send_audio(chunk_size, audio_file):
-
+    '''
     CHUNK = chunk_size
 
     #Built in functionality from pyAudio.
-    '''
     print(sys.argv)
 
     if len(sys.argv) < 2:
-        print("Plays a wave file.\n\nUsage: %s filename.wav" % sys.argv[0])
-        #sys.exit(-1)
-    '''
-
-    #wf is the wave file to be played.
+    print("Plays a wave file.\n\nUsage: %s filename.wav" % sys.argv[0])
+    #sys.exit(-1)
     wf = wave.open(audio_file, 'rb')
 
     #p is the audio player.
     p = pyaudio.PyAudio()
     #Stream creates a stream of audio data that can be transmitted as a series of strings.
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
-                    output=True)
+                channels=wf.getnchannels(),
+                rate=wf.getframerate(),
+                output=True)
 
 
-    '''
     f = open('../examples.csv')
 
     while True:
-        line = f.readline()
-        if not line:
-            break
+    line = f.readline()
+    if not line:
+        break
 
-        transmit(line)
+    transmit(line)
 
-    '''
     array = []
     #Grabs the first chunk of data.
     data = wf.readframes(CHUNK)
     counter=0
     #Reads data until there is silence from the audio file.
     while data:
-        #stream.write(data)
-        array.append(data)
-        counter+=1
-        print(counter,"*")
-        data = wf.readframes(CHUNK)
-    
+    #stream.write(data)
+    array.append(data)
+    counter+=1
+    print(counter,"*")
+    data = wf.readframes(CHUNK)
+
 
     """Test audio """
     """
@@ -103,32 +97,32 @@ def send_audio(chunk_size, audio_file):
     pya = pyaudio.PyAudio()
     stream = pya.open(format=pya.get_format_from_width(1), channels=1,rate=44100, output=True)
 
-    
+
     stream.write(data)
     stream.stop_stream()
     stream.close()
     """ 
-
+    '''
     arr = 'a'*100
 
-        #Calls the transmit function and passes in a string of data the size of chunk.
-    for x in range (0, len(array)):
+    #Calls the transmit function and passes in a string of data the size of chunk.
+    for x in range (0, len(arr)):
         if x % 100 == 0:
             local_xbee.send_data(remote_device, arr)
         else:
             local_xbee.send_data_async(remote_device, arr)
         if x >= 1141 and x  <= 1152:
             print(array[x])
-        #print(x)
-        #Simulation for data received by the receiver.
-        #receive_audio.receive(data)
+    #print(x)
+    #Simulation for data received by the receiver.
+    #receive_audio.receive(data)
 
 
 
-    stream.stop_stream()
-    stream.close()
+    #stream.stop_stream()
+    #stream.close()
     print("Done")
-    p.terminate()
+    #p.terminate()
     local_xbee.close()
     exit()
 
