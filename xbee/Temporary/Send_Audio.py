@@ -109,12 +109,14 @@ def send_audio(chunk_size, audio_file):
     stream.close()
     """ 
 
+    arr = 'a'*100
+
         #Calls the transmit function and passes in a string of data the size of chunk.
     for x in range (0, len(array)):
         if x % 100 == 0:
-            local_xbee.send_data(remote_device, array[x])
+            local_xbee.send_data(remote_device, arr)
         else:
-            local_xbee.send_data_async(remote_device, array[x])
+            local_xbee.send_data_async(remote_device, arr)
         if x >= 1141 and x  <= 1152:
             print(array[x])
         #print(x)

@@ -53,10 +53,13 @@ def main():
 									 ("0013A2004102FC76"))
 		rec = receiver()
 
-		device.add_data_received_callback(rec.data_rec)
+#		device.add_data_received_callback(rec.data_rec)
 
 		while(True):
-			pass
+			xbee_message = device.read_data()
+			if xbee_message:
+				rec.counter += 1
+				print(rec.counter)
 		device.close()
 
 if __name__ == '__main__':

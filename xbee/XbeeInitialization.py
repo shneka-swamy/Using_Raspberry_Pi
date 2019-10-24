@@ -58,11 +58,11 @@ class XbeeInitialization():
             self.serialPort.flushInput()
             self.write(b'+++')
             #write 250000
-            self.write(b'ATBD3D090\r')
+            self.write(b'ATBD1B207\r')
             self.write(b'ATAC\r')  
             self.write(b'ATWR\r')
             self.write(b'ATCN\r')
-            self.serialPort.baudrate = 250000
+            self.serialPort.baudrate = 111111
 
         except CommunicationError as err:
             print("Error in setMaxBaud caused by: %s" %err)
