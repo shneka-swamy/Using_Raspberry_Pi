@@ -4,7 +4,7 @@ import sys
 from digi.xbee.devices import *
 from digi.xbee.util import *
 from digi.xbee.exception import *
-
+import time
 import receive_audio
 import numpy as np
 
@@ -106,13 +106,14 @@ def send_audio(chunk_size, audio_file):
     arr = 'a'*100
 
     #Calls the transmit function and passes in a string of data the size of chunk.
-    for x in range (0, len(arr)):
-        if x % 100 == 0:
+    for x in range (0, 1000):
+        arr = bytearray([x]*100)
+        if x % 10 == 0:
+            print(x, "SyncMessage")
             local_xbee.send_data(remote_device, arr)
         else:
             local_xbee.send_data_async(remote_device, arr)
-        if x >= 1141 and x  <= 1152:
-            print(array[x])
+            time.sleep(0.02)
     #print(x)
     #Simulation for data received by the receiver.
     #receive_audio.receive(data)
