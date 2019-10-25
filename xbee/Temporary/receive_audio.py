@@ -44,23 +44,23 @@ class receiver:
 
 def main():
 
-		#Initializes the device.
-		device = XBeeDevice("/dev/ttyS0", 250000)
-		device.open()
+    #Initializes the device.
+    device = XBeeDevice("/dev/ttyS0", 250000)
+    device.open()
 
-		#Initializes the remote device.
-		remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string
-									 ("0013A2004102FC76"))
-		rec = receiver()
-
-#		device.add_data_received_callback(rec.data_rec)
-
-		while(True):
-			xbee_message = device.read_data()
-			if xbee_message:
-				rec.counter += 1
-				print(rec.counter)
-		device.close()
+    #Initializes the remote device.
+    remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string
+                                                             ("0013A2004102FC76"))
+    rec = receiver()
+    #device.add_data_received_callback(rec.data_rec)
+    messages = []
+    while(True):
+        xbee_message = device.read_data()
+        if xbee_message:
+                messages.append(xbee_message)
+                if len(messages) % 10 == 0:
+                    print(len(messages))
+    device.close()
 
 if __name__ == '__main__':
     main()
