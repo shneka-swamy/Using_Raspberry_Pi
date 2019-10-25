@@ -10,7 +10,7 @@ import numpy as np
 
 print ("Starting program")
 # Instantiate an XBee device object.
-local_xbee = XBeeDevice("/dev/ttyS0", 250000)
+local_xbee = Raw802Device("/dev/ttyS0", 250000)
 #local_xbee.set_sync_ops_timeout(1)
 remote_device = RemoteXBeeDevice(local_xbee, XBee64BitAddress.from_hex_string
                                                 ("0013A2004102FC32"))
@@ -64,7 +64,7 @@ def send_audio(chunk_size, audio_file):
     #Stream creates a stream of audio data that can be transmitted as a series of strings.
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
                 channels=wf.getnchannels(),
-                rate=wf.getframerate(),
+               rate=wf.getframerate(),
                 output=True)
 
 

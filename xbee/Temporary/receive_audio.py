@@ -45,9 +45,9 @@ class receiver:
 def main():
 
     #Initializes the device.
-    device = XBeeDevice("/dev/ttyS0", 250000)
+    device = Raw802Device("/dev/ttyS0", 250000)
     device.open()
-
+    
     #Initializes the remote device.
     remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string
                                                              ("0013A2004102FC76"))
