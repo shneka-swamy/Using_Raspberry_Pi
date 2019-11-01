@@ -1,0 +1,5 @@
+Cannot get permission to use /dev/ttyS0 on Rob's Pi 3.
+	*Needs furthur investigate
+	*Tried chmod
+	*Adding user to dialout
+	
