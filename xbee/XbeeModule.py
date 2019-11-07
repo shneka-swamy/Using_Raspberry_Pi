@@ -30,7 +30,7 @@ class CommunicationError(Error):
 
 class Xbee():
 
-    def __init__(self, portName, baudrate, address):
+    def __init__(self, portName, baudrate, address, apiMode):
         self.serialPort = serial.Serial(portName, baudrate, timeout=2)
         self.sio = io.BufferedRWPair(self.serialPort,self.serialPort, 1)
         self.serialPort.reset_output_buffer()
@@ -41,22 +41,23 @@ class Xbee():
         self.destAddr = b''
         
         xbeeBaudRate = self.getBaudRate()
+        #Error occured configuring buad rate
         while(xbeeBaudRate ==0 or xbeeBaudRate == 1):
-            print(f"Current baud rate @ {self.serialPort.baudrate}")
-            if xbeeBaudRate == 0:
+            if self.serialPort.baudrate == 250000:
                 self.serialPort.baudrate = 115200
-                self.setMaxBaud()
-                xbeeBaudRate = self.getBaudRate()
-            elif xbeeBaudRate == 1:
-                print("Baud rate was not %s, trying 115200" %baudrate)
-                xbee.serialPort.baudrate = 115200
-                if self.getBaudRate():
-                    time.sleep(1.1)
-                    self.setMaxBaud()
-                    xbeeBaudRate = self.getBaudRate()
-                    print("Error resolved: Baud rate now set to 250000")
+            elif self.serialPort.baudrate == 115200:
+                self.serialPort.baudrate = 9600
             else:
-                print("error with xbee initial baud rate, exiting program")
+                print("Buad rate error")
+            if baudrate == 250000:
+                self.setMaxBaud()
+            elif baudrate == 115200:
+                self.setBaudto115k()
+
+            time.sleep(1.2)
+            xbeeBaudRate = self.getBaudRate()
+            
+
         time.sleep(1.1)
         self.setMinGaurdTime()
         time.sleep(1.1)
@@ -64,14 +65,15 @@ class Xbee():
         time.sleep(1.1)
         self.setDH16Addr()
         time.sleep(1.1)
-        self.enableTransparentMode()
+        if apiMode:
+            self.enableAPIMode()
+        else:
+            self.enableTransparentMode()
         time.sleep(1.1)
         self.address = self.getMy16BitAddress()
         time.sleep(1.1)
         self.setTxPowerLevel(b'0')
         time.sleep(1.1)
-
-
 
 
 
