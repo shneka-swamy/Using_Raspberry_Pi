@@ -21,6 +21,7 @@ class RouteFormation:
 		self.rrep = ""
 
 	# <Sequence Number, Hop number, Degree, Source ID, Intermediate ID, Destination ID, Expiry Time>
+	# All the elements are maintained as strings to maintain consistenecy throughout the program
 	def createTable(self, device):
 		print("Entered")
 		self.device_discovery(device)
@@ -29,7 +30,8 @@ class RouteFormation:
 		if len(self.rem) == 0:
 			print("No neighbour found so far try after sometime")
 		else:
-			self.table.append([str(self.SeqenceNo), str(1), str(self.neighbourcount), str(device.get_64bit_addr()),self.rem[0],self.rem[0], 5])
+			for i in range(0, self.neighbourcount):
+				self.table.append([str(self.SeqenceNo), str(1), str(self.neighbourcount), str(device.get_64bit_addr()),self.rem[i],self.rem[i], 5])
 		
 		print(self.table) 
 
@@ -41,16 +43,14 @@ class RouteFormation:
 			# Don't make any changes if the time for keeping the block expires
 			if block[-1] == 0:
 				self.table.remove(block)
-			# If the destination is the same 
-			# This happens when the sequence number is greater or the hop number is lower
+			# If the destiantion needs to be chaged
+			# This happens when the sequence number is greater or the block number is lower
 			else:
-				if message[5] == block[5] and (int(block[0]) < int(message[0]) or int(block[1])  > int(message[1])):
+				if message[5] == block[5] and (int(block[0]) <  int(message[0]) or int(block[1])  > int(message[1])):
 					block[:] = message[0:6] 
 					block.append(5)
-		print("Table Updated at Reply:")
-		print(self.table)
 
-	# Must check the logic behind this part 
+
 	def updateTable_request(self, device, message):
 		for block in self.table:
 			
@@ -59,7 +59,9 @@ class RouteFormation:
 			# If the destiantion needs to be chaged
 			# This happens when the sequence number is greater or the block number is lower
 			else:
-				if message[4] == block[5] and (int(block[0]) <  int(message[1]) or int(block[1]) > int(message[2])):
+				print(message[4])
+				print(block[5])
+				if message[4] == block[5] and (int(block[0]) <  int(message[1]) or int(block[1])  > int(message[2])):
 					print("Actually updating table")
 					block[:] = message[1:4]
 					block.append(str(device.get_64bit_addr()))
@@ -67,13 +69,11 @@ class RouteFormation:
 					block.append(message[4])
 					block.append(5)
 
-		print("Table Updated at Request:")
-		print(self.table)
-
 
 	def generateRREQ(self, device, dest):
 		
 		degree = self.neighbourcount
+		self.SeqenceNo += 1
 
 		self.rreq += str(self.Id) + ' ' + str(self.SeqenceNo) + ' ' + str(1) + ' ' + str(degree) + ' '
 		self.rreq += str(device.get_64bit_addr()) + ' ' + str(device.get_64bit_addr()) + ' '
@@ -83,8 +83,6 @@ class RouteFormation:
 		
 		# Drop the packet when duplicated and when multiple path request are made at the same time.
 		self.interTable(self.rreq.split())
-		# Every message sent will increase the sequence number
-		self.SeqenceNo += 1
 		device.send_data_broadcast(self.rreq)
 
 		self.sendReply(device)
@@ -121,10 +119,12 @@ class RouteFormation:
 			time.sleep(0.1)
 
 	# This table can be used to get back to the source (must not be dropped)
+	# Added a timer to the intermediate table.	
 	def interTable(self, message):
 		# Consist of the information in the received queue 
 		# Essentially requires only braodcast Id and source. (Other details are stored for possible optimisation)
 		self.inter_table.append(message)
+		self.inter_table.append(5)
 		print("Intermediate  Table :")
 		print(self.inter_table)
 
@@ -189,8 +189,6 @@ class RouteFormation:
 					print("Processing Reply:")
 					path_flag = True
 
-					print(string_val)
-
 					for member in self.inter_table:
 						print("Check the graph")
 						if member[6] == string_val[5] and member[4] == string_val[3]: 
@@ -209,14 +207,15 @@ class RouteFormation:
 							print("Send Message - Path is set")
 						# If the source is not reached  send the information forward.
 						else:
-							print("What ??")
+							print("What ???")
 							remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string(string_val[4]))
 							device.send_data(remote_device,' '.join(string_val))	
+	
 
 def main():
 
 	# To open the Xbee device and to work with it
-	device = XBeeDevice("/dev/ttyUSB0", 250000)
+	device = XBeeDevice("/dev/ttyUSB1", 250000)
 	device.open()
 
 	# Create an object for sending Route Request for a message
@@ -224,21 +223,17 @@ def main():
 	rreq = RouteFormation()
 	rreq.createTable(device)
 
-	# This function must be called when not set as a source
-	rreq.sendReply(device)
-
 	# These steps are inherent to source node.
 	# print ("Press 'y' to declare as the source")
 
 	#rreq.declareSource(device, "0013A20040B317F6")
 	#rreq.declareSource(device, "0013A2004102FC76")
 	#rreq.declareSource(device, "0013A20040B317F6")
+	#rreq.declareSource(device, "0013A20040B31805")
 
 
 	device.close()
 
 if __name__ == "__main__":
 	main()
-
-
 
