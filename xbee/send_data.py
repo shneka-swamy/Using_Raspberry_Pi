@@ -28,7 +28,8 @@ def main():
 
 	xbee_1.setDH('00000000')
 	
-	xbee_1.transparentTransmit(b'Hello','CCCC')
+	xbee_1.transparentTransmit(b'Hello','AAAA')
+	xbee_1.transparentTransmit(b'Hello','BBBB')
 
 
 	#print(xbee_2.transparentRead()) 
