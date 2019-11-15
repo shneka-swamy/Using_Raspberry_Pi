@@ -54,15 +54,16 @@ def str2bool(v):
 def main():
     parser = argparse.ArgumentParser(description='audio player')
 
-    parser.add_argument('--addr', action='store', dest='address', type=str, help='16 bit address')
-    parser.add_argument('--port', action='store', dest='portName', default='/dev/ttyUSB0')
-    parser.add_argument('--rate', action='store', dest='baudRate', type=int, default=250000)
-    parser.add_argument('--api', action='store', dest='apiMode', type=str2bool, default=True)
-    parser.add_argument('--api', action='store', dest='S1Mode', type=str2bool, default=False)
-    args = parser.parse_args()
+	parser = argparse.ArgumentParser(description='audio player')
+	parser.add_argument('--addr', action='store', dest='address', type=str, help='16 bit address')
+	parser.add_argument('--port', action='store', dest='portName', default='/dev/ttyUSB0')
+	parser.add_argument('--rate', action='store', dest='baudRate', type=int, default=250000)
+	parser.add_argument('--api', action='store', dest='apiMode', type=str2bool, default=False)
+	parser.add_argument('--s1', action='store', dest='S1Mode', type=str2bool, default=False)
+	args = parser.parse_args()
 
     print(args.apiMode)
-    xbee = Xbee(args.portName, args.baudRate, args.address, args.apiMode)
+    xbee = Xbee(args.portName, args.baudRate, args.address, args.apiMode, args.S1Mode)
    
     if args.apiMode:
         xbee_interface = Raw802Device(args.portName, 250000)
