@@ -48,7 +48,11 @@ class Xbee():
             elif self.serialPort.baudrate == 115200:
                 self.serialPort.baudrate = 9600
             else:
+                self.serialPort.baudrate = 250000
                 print("Buad rate error")
+
+            print(baudrate)
+            print(self.serialPort.baudrate)
             if baudrate == 250000:
                 self.setMaxBaud()
             elif baudrate == 115200:
@@ -61,7 +65,8 @@ class Xbee():
         time.sleep(1.1)
         self.setMinGaurdTime()
         time.sleep(1.1)
-        self.setMy16BitAddress(address)
+        if address:
+            self.setMy16BitAddress(address)
         time.sleep(1.1)
         self.setDH16Addr()
         time.sleep(1.1)
@@ -69,11 +74,13 @@ class Xbee():
             self.enableAPIMode()
         else:
             self.enableTransparentMode()
-        time.sleep(1.1)
-        self.address = self.getMy16BitAddress()
+        #time.sleep(1.1)
+        #self.address = self.getMy16BitAddress()
         time.sleep(1.1)
         self.setTxPowerLevel(b'0')
         time.sleep(1.1)
+        self.setMM()
+
 
 
 
@@ -200,6 +207,29 @@ class Xbee():
             return 
 
     
+    def setMM(self):
+        try:
+            self.enterCommandMode()
+            message=b'MM2'
+            self.write(message)
+            self.applyChanges()
+            self.exitCommandMode()
+        except CommunicationError as err:
+            print("Error in setChannel caused by: %s" %err)
+            return 
+
+    def enableS1Compatability(self):
+        try:
+            self.enterCommandMode()
+            message=b'C801'
+            self.write(message)
+            self.applyChanges()
+            self.exitCommandMode()
+        except CommunicationError as err:
+            print("Error in setChannel caused by: %s" %err)
+            return 
+
+
     def setDH16Addr(self):
         try:
             self.enterCommandMode()        
@@ -210,6 +240,21 @@ class Xbee():
             print("Error in Set DH caused by: %s" %err)
             return 
 
+
+    def setDH(self, address):
+
+        try:
+            self.enterCommandMode()
+            message = b'ATDH'+bytes(address,'ascii')
+            message+= b'\r'    
+            self.write(message)
+            self.applyChanges()
+            self.exitCommandMode()
+        except CommunicationError as err:
+            print("Error in Set DH caused by: %s" %err)
+            return 
+
+
     def setDL(self, address):
         if address == self.destAddr:
             return
@@ -217,7 +262,7 @@ class Xbee():
             self.destAddr = address
         try:
             self.enterCommandMode()
-            message = b'ATDL0000'+address
+            message = b'ATDL'+bytes(address,'ascii')
             message+= b'\r'
             self.write(message)
             self.applyChanges()
