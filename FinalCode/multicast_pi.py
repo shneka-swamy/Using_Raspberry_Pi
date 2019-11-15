@@ -26,10 +26,11 @@ class RouteFormation:
 		self.device_discovery(device)
 		self.neighbourcount = len(self.rem)
 			
-		if len(self.rem) == 0:
+		if self.neighbourcount == 0:
 			print("No neighbour found so far try after sometime")
 		else:
-			self.table.append([str(self.SeqenceNo), str(1), str(self.neighbourcount), str(device.get_64bit_addr()),self.rem[0],self.rem[0], 5])
+			for i in range(0, self.neighbourcount):
+				self.table.append([str(self.SeqenceNo), str(1), str(self.neighbourcount), str(device.get_64bit_addr()),self.rem[i],self.rem[i], 5])
 		
 		print(self.table) 
 
@@ -166,11 +167,18 @@ class RouteFormation:
 
 					if duplicate_flag == False:
 
+						self.interTable(string_val)
 						if str(device.get_64bit_addr()) == string_val[6]:
 							remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string (string_val[5]))
 							self.SeqenceNo += 1
 							# Add the source as destianation to the table
 							self.updateTable_request(device, string_val)
+
+							# The timer is used to set the path to wait for sometime to get the path 
+							start = time.time()
+							while(time.time() - start < 5):
+								pass
+
 							self.generateRREP(device, remote_device, string_val)
 						else:
 							print("wait")
@@ -193,10 +201,9 @@ class RouteFormation:
 
 					for member in self.inter_table:
 						print("Check the graph")
+						print(member[6])
+						print(member[4])
 						if member[6] == string_val[5] and member[4] == string_val[3]: 
-							# Change the intermediate ID
-							string_val[4] = member[5] 
-							self.inter_table.remove(member)
 							self.updateTable_reply(string_val)
 							path_flag = False
 
@@ -211,12 +218,13 @@ class RouteFormation:
 						else:
 							print("What ??")
 							remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string(string_val[4]))
-							device.send_data(remote_device,' '.join(string_val))	
+							#device.send_data(remote_device,' '.join(string_val))	
+							print("Forward not the path")
 
 def main():
 
 	# To open the Xbee device and to work with it
-	device = XBeeDevice("/dev/ttyUSB0", 250000)
+	device = XBeeDevice("/dev/ttyUSB3", 250000)
 	device.open()
 
 	# Create an object for sending Route Request for a message
@@ -228,17 +236,16 @@ def main():
 	rreq.sendReply(device)
 
 	# These steps are inherent to source node.
-	# print ("Press 'y' to declare as the source")
+	# print ("Press 'y' to declare as the source")	
 
 	#rreq.declareSource(device, "0013A20040B317F6")
 	#rreq.declareSource(device, "0013A2004102FC76")
 	#rreq.declareSource(device, "0013A20040B317F6")
+	#rreq.declareSource(device, "0013A2004102FC76")
 
 
 	device.close()
 
 if __name__ == "__main__":
 	main()
-
-
 
