@@ -81,7 +81,7 @@ class Xbee():
         time.sleep(1.1)
         self.setMM()
         time.sleep(1.1)
-        if(not S1)
+        if(not S1):
             self.enableS1Compatability()
             time.sleep(1.1)
 
