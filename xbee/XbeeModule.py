@@ -30,7 +30,7 @@ class CommunicationError(Error):
 
 class Xbee():
 
-    def __init__(self, portName, baudrate, address, apiMode):
+    def __init__(self, portName, baudrate, address, apiMode, S1):
         self.serialPort = serial.Serial(portName, baudrate, timeout=2)
         self.sio = io.BufferedRWPair(self.serialPort,self.serialPort, 1)
         self.serialPort.reset_output_buffer()
@@ -81,8 +81,9 @@ class Xbee():
         time.sleep(1.1)
         self.setMM()
         time.sleep(1.1)
-        self.enableS1Compatability()
-        time.sleep(1.1)
+        if(not S1)
+            self.enableS1Compatability()
+            time.sleep(1.1)
 
 
     def __exit__(self, type, value, traceback):

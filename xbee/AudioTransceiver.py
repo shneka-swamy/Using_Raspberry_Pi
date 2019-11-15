@@ -58,6 +58,7 @@ def main():
     parser.add_argument('--port', action='store', dest='portName', default='/dev/ttyUSB0')
     parser.add_argument('--rate', action='store', dest='baudRate', type=int, default=250000)
     parser.add_argument('--api', action='store', dest='apiMode', type=str2bool, default=True)
+    parser.add_argument('--api', action='store', dest='S1Mode', type=str2bool, default=False)
     args = parser.parse_args()
 
     print(args.apiMode)
