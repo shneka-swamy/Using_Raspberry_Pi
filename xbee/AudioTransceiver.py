@@ -146,7 +146,7 @@ def main():
         messageNum = 1
         data = wf.readframes(CHUNK)
         print(len(data))
-        datda = scipy.signal.resample(data, 8000)
+        #datda = scipy.signal.resample(data, 8000)
         print(len(data))
         while len(data) > 0:
             xbee.transparentTransmit(data, remote_device[8:])

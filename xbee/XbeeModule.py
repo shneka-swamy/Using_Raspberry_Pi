@@ -80,8 +80,9 @@ class Xbee():
         self.setTxPowerLevel(b'0')
         time.sleep(1.1)
         self.setMM()
-
-
+        time.sleep(1.1)
+        self.enableS1Compatability()
+        time.sleep(1.1)
 
 
     def __exit__(self, type, value, traceback):
@@ -210,18 +211,18 @@ class Xbee():
     def setMM(self):
         try:
             self.enterCommandMode()
-            message=b'MM2'
+            message=b'ATMM2\r'
             self.write(message)
             self.applyChanges()
             self.exitCommandMode()
         except CommunicationError as err:
-            print("Error in setChannel caused by: %s" %err)
+            print("Error in MM caused by: %s" %err)
             return 
 
     def enableS1Compatability(self):
         try:
             self.enterCommandMode()
-            message=b'C801'
+            message=b'ATC80\r'
             self.write(message)
             self.applyChanges()
             self.exitCommandMode()
