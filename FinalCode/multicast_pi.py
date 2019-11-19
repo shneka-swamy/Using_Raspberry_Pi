@@ -1,4 +1,5 @@
 from digi.xbee.devices import *
+import time
 
 # Edit the code for multiple destiantions (can be implemented later)
 
@@ -6,8 +7,8 @@ from digi.xbee.devices import *
 class RouteFormation:
 
 	# The route request uses the following message pattern to set up communication
-	# Source Request is < Broadcast ID, Sequence Number , Hop Number, Degree, Source ID, Intermediate ID , Destination ID (number can vary)>
-	# Route Reply is of the form <Sequence Number, Broadcast ID, Hop Number, Source, Intermediate >
+	# Source Request is <Broadcast ID, Sequence Number , Hop Number, Degree, Source ID, Intermediate ID , Destination ID (number can vary)>
+	# Route Reply is of the form <Sequence Number, Hop Number, Degree, Source, Intermediate, Destination >
 	def __init__(self):
 		self.rreq = ""
 		self.isSource = False
@@ -45,7 +46,7 @@ class RouteFormation:
 			# If the destination is the same 
 			# This happens when the sequence number is greater or the hop number is lower
 			else:
-				if message[5] == block[5] and (int(block[0]) < int(message[0]) or int(block[1])  > int(message[1])):
+				if message[5] == block[5] and (int(block[0]) < int(message[0]) and int(block[1])  > int(message[1])):
 					block[:] = message[0:6] 
 					block.append(5)
 		print("Table Updated at Reply:")
@@ -72,6 +73,13 @@ class RouteFormation:
 		print(self.table)
 
 
+	def search_table(self, dest):
+		for value in self.table:
+			if(value[5] == dest):
+				return value[4]
+			else: 
+				return 0
+ 
 	def generateRREQ(self, device, dest):
 		
 		degree = self.neighbourcount
@@ -122,6 +130,7 @@ class RouteFormation:
 			time.sleep(0.1)
 
 	# This table can be used to get back to the source (must not be dropped)
+	# This is same as the information received from the route request
 	def interTable(self, message):
 		# Consist of the information in the received queue 
 		# Essentially requires only braodcast Id and source. (Other details are stored for possible optimisation)
@@ -129,15 +138,23 @@ class RouteFormation:
 		print("Intermediate  Table :")
 		print(self.inter_table)
 
-
+    #<Sequence Number, Hop number, degree, Source Id, Intermediate Id, Destination ID>
 	def generateRREP(self, device, remote_device,  message):
-		degree = self.neighbourcount
+		#degree = self.neighbourcount
+		# Do not change the hop count and the degree when sending back the reply.
 
-		self.rrep += str(self.SeqenceNo) + ' ' + message[2] + ' ' + str(degree + int(message[3])) + ' '
+		self.rrep += str(self.SeqenceNo) + ' ' + message[2] + ' ' + message[3] + ' '
 		self.rrep += message[4] + ' ' + str(device.get_64bit_addr()) + ' '
 		self.rrep += message[6]
 
 		device.send_data(remote_device, self.rrep)
+
+	def send_message(device, remote_device, destination):
+		device.send_data(remote_device, destination)
+		device.send_data(remote_device, "Hello World")
+		device.send_data(remote_device, "Finally single hop worked")
+		device.send_data(remote_device, "How should I integrate")
+		device.send_data(remote_device, "TRY")
 
 	# Use a call back function instead ??		
 	def sendReply(self, device):
@@ -152,16 +169,45 @@ class RouteFormation:
 				string_val = xbee_message.data.decode().split()
 				print(string_val)
 
+				# Use this 2 message to transfer data
+				if len(string_val) == 1:
+					address = string_val
+					print("information is received, Waiting for data:")
+					print(address)
+					
+					# Check if it works for one hop
+					final_message = []
+					while True:
+						message = device.read_data()
+
+						if message is not None:
+							final_message.append(message)
+							if len(message) == 1:
+								print("Finished Receving data")
+								break
+
+					# Check if the device is the final destination
+					if device.get_64bit_addr() == address[0]:
+						print("Message received at the receiver end")
+					# Check in the table and transfer the information 
+					else:
+						value = self.search_table(dest)
+						if value == 0:
+							print("Error in path")
+						else:
+							self.send_message(device, value, dest)
+
 				# Helps identify the Route Request Packet
 				# Once a request is got run a timer (must be added later)
-				if len(string_val) == 7:
+				elif len(string_val) == 7:
 					duplicate_flag = False
 						
 					# This condition checks if the same message request is reaching the node. 
 					# The value 0 can be changed after the intermediate node is formed.
 					for list in self.inter_table:
+
 						if list[4] == string_val[4] and list[0] == string_val[0]:
-							print("Drop the message, extra information received")
+							print("Drop the message, extra information rseceived")
 							duplicate_flag = True
 							break 
 
@@ -174,15 +220,10 @@ class RouteFormation:
 							# Add the source as destianation to the table
 							self.updateTable_request(device, string_val)
 
-							# The timer is used to set the path to wait for sometime to get the path 
-							start = time.time()
-							while(time.time() - start < 5):
-								pass
-
+							print("Generating Reply")
 							self.generateRREP(device, remote_device, string_val)
 						else:
 							print("wait")
-							self.interTable(string_val)
 							self.updateTable_request(device, string_val)
 							self.SeqenceNo += 1
 							string_val[5] = str(device.get_64bit_addr())
@@ -193,7 +234,7 @@ class RouteFormation:
 
 				# When the value of the message received is 6 a reply message is received.
 				# Look at the intermediate table and send the message through the intermediate node.
-				if len(string_val) == 6:
+				elif len(string_val) == 6:
 					print("Processing Reply:")
 					path_flag = True
 
@@ -201,8 +242,6 @@ class RouteFormation:
 
 					for member in self.inter_table:
 						print("Check the graph")
-						print(member[6])
-						print(member[4])
 						if member[6] == string_val[5] and member[4] == string_val[3]: 
 							self.updateTable_reply(string_val)
 							path_flag = False
@@ -212,19 +251,31 @@ class RouteFormation:
 					else:
 						if str(device.get_64bit_addr()) == string_val[3]:
 							remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string (string_val[4]))
-							# To get the route while sending a data, the table must be verified
-							print("Send Message - Path is set")
-						# If the source is not reached  send the information forward.
+							print("String Value:")
+							print(string_val)
+							print(string_val[4])
+
+							print("Send Data - Path Set")
+							# First send the destination address and then send the message.
+							self.send_message(device, remote_device, string_val[5])
+							
 						else:
 							print("What ??")
+							# Change the intermediate ID
+							string_val[4] = member[5] 
 							remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string(string_val[4]))
-							#device.send_data(remote_device,' '.join(string_val))	
-							print("Forward not the path")
+
+							print(string_val)
+							device.send_data(remote_device,' '.join(string_val))	
+
+							print("Forward not the source")
+
 
 def main():
 
+
 	# To open the Xbee device and to work with it
-	device = XBeeDevice("/dev/ttyUSB3", 250000)
+	device = XBeeDevice("/dev/ttyUSB0", 250000)
 	device.open()
 
 	# Create an object for sending Route Request for a message
@@ -233,19 +284,19 @@ def main():
 	rreq.createTable(device)
 
 	# This function must be called when not set as a source
-	rreq.sendReply(device)
+	#rreq.sendReply(device)
 
 	# These steps are inherent to source node.
 	# print ("Press 'y' to declare as the source")	
 
-	#rreq.declareSource(device, "0013A20040B317F6")
+	rreq.declareSource(device, "0013A20040B317F6")
 	#rreq.declareSource(device, "0013A2004102FC76")
-	#rreq.declareSource(device, "0013A20040B317F6")
-	#rreq.declareSource(device, "0013A2004102FC76")
+	#rreq.declareSource(device, "0013A20040B31805")
 
 
 	device.close()
 
 if __name__ == "__main__":
 	main()
+
 
