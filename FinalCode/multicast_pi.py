@@ -210,18 +210,19 @@ class RouteFormation:
 					for list in self.inter_table:
 
 						if list[4] == string_val[4] and list[0] == string_val[0]:
-							print("Drop the message, extra information received")
+							print("Drop the message, extra information rseceived")
 							duplicate_flag = True
 							break 
 
 					if duplicate_flag == False:
 
 						# To enable checking hops remove the message coming from the source:
-						if string_val[5] == string_val[4]:
-							print("Leaving the packet coming directly from the source")
-						else:
-							self.interTable(string_val)
-							if str(device.get_64bit_addr()) == string_val[6]:
+					
+						if str(device.get_64bit_addr()) == string_val[6]:
+							if string_val[5] == string_val[4]:
+								print("Leaving the packet coming directly from the source")
+							else:
+								self.interTable(string_val)
 								remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string (string_val[5]))
 								self.SeqenceNo += 1
 								# Add the source as destianation to the table
@@ -229,14 +230,15 @@ class RouteFormation:
 
 								print("Generating Reply")
 								self.generateRREP(device, remote_device, string_val)
-							else:
-								print("wait")
-								self.updateTable_request(device, string_val)
-								self.SeqenceNo += 1
-								string_val[5] = str(device.get_64bit_addr())
-								string_val[3] = str(int(string_val[3]) + self.neighbourcount)
-								string_val[2] = str(int(string_val[2]) + 1)
-								device.send_data_broadcast(' '.join(string_val))
+						else:
+							print("wait")
+							self.interTable(string_val)
+							self.updateTable_request(device, string_val)
+							self.SeqenceNo += 1
+							string_val[5] = str(device.get_64bit_addr())
+							string_val[3] = str(int(string_val[3]) + self.neighbourcount)
+							string_val[2] = str(int(string_val[2]) + 1)
+							device.send_data_broadcast(' '.join(string_val))
 
 
 				# When the value of the message received is 6 a reply message is received.
