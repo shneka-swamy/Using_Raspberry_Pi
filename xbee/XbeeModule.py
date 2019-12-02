@@ -28,15 +28,65 @@ class CommunicationError(Error):
         return self.message
 
 
-class XbeeInitialization():
+class Xbee():
 
-    def __init__(self, portName, baudrate):
+    def __init__(self, portName, baudrate, address, apiMode, S1):
         self.serialPort = serial.Serial(portName, baudrate, timeout=2)
         self.sio = io.BufferedRWPair(self.serialPort,self.serialPort, 1)
         self.serialPort.reset_output_buffer()
         self.serialPort.reset_input_buffer()
+        
+    
         self.startDelimiter =  bytes([0x7E])
-        self.destAddr = 0
+        self.destAddr = b''
+        
+        xbeeBaudRate = self.getBaudRate()
+        #Error occured configuring buad rate
+        while(xbeeBaudRate ==0 or xbeeBaudRate == 1):
+            if self.serialPort.baudrate == 250000:
+                self.serialPort.baudrate = 115200
+            elif self.serialPort.baudrate == 115200:
+                self.serialPort.baudrate = 9600
+            else:
+                self.serialPort.baudrate = 250000
+                print("Buad rate error")
+
+            print(baudrate)
+            print(self.serialPort.baudrate)
+            if baudrate == 250000:
+                self.setMaxBaud()
+            elif baudrate == 115200:
+                self.setBaudto115k()
+
+            time.sleep(1.2)
+            xbeeBaudRate = self.getBaudRate()
+            
+
+        time.sleep(1.1)
+        self.setMinGaurdTime()
+        time.sleep(1.1)
+        if address:
+            self.setMy16BitAddress(address)
+        time.sleep(1.1)
+        self.setDH16Addr()
+        time.sleep(1.1)
+        if apiMode:
+            self.enableAPIMode()
+        else:
+            self.enableTransparentMode()
+        #time.sleep(1.1)
+        #self.address = self.getMy16BitAddress()
+        time.sleep(1.1)
+        self.setTxPowerLevel(b'0')
+        time.sleep(1.1)
+        self.setMM()
+        time.sleep(1.1)
+        if(not S1):
+            self.enableS1Compatability()
+            time.sleep(1.1)
+        xbee_1.setDH('00000000')
+        time.sleep(1.1)
+
 
     def __exit__(self, type, value, traceback):
         print(traceback, value)
@@ -134,21 +184,17 @@ class XbeeInitialization():
             print("Error in enableTransparentMode caused by: %s" %err)
             return 
 
-    '''
-    def minGaurdTime(self):
+    
+    def setMinGaurdTime(self):
         try:
-            if(channelNumber < 0xB or channelNumber > 0x1A):
-                return False
             self.enterCommandMode()
-            message=(b'ATCH'+bytes(channelNumber,ascii))
-            message+=b'\r'
-            self.write(message)
+            self.write(b'ATGT2\r')
             self.applyChanges()
             self.exitCommandMode()
         except CommunicationError as err:
-            print("Error in setChannel caused by: %s" %err)
+            print("Error in setMinGaurdTime caused by: %s" %err)
             return        
-    '''
+    
 
     def setChannel(self, channelNumber):
         try:
@@ -165,6 +211,29 @@ class XbeeInitialization():
             return 
 
     
+    def setMM(self):
+        try:
+            self.enterCommandMode()
+            message=b'ATMM2\r'
+            self.write(message)
+            self.applyChanges()
+            self.exitCommandMode()
+        except CommunicationError as err:
+            print("Error in MM caused by: %s" %err)
+            return 
+
+    def enableS1Compatability(self):
+        try:
+            self.enterCommandMode()
+            message=b'ATC80\r'
+            self.write(message)
+            self.applyChanges()
+            self.exitCommandMode()
+        except CommunicationError as err:
+            print("Error in setChannel caused by: %s" %err)
+            return 
+
+
     def setDH16Addr(self):
         try:
             self.enterCommandMode()        
@@ -175,6 +244,21 @@ class XbeeInitialization():
             print("Error in Set DH caused by: %s" %err)
             return 
 
+
+    def setDH(self, address):
+
+        try:
+            self.enterCommandMode()
+            message = b'ATDH'+bytes(address,'ascii')
+            message+= b'\r'    
+            self.write(message)
+            self.applyChanges()
+            self.exitCommandMode()
+        except CommunicationError as err:
+            print("Error in Set DH caused by: %s" %err)
+            return 
+
+
     def setDL(self, address):
         if address == self.destAddr:
             return
@@ -182,7 +266,7 @@ class XbeeInitialization():
             self.destAddr = address
         try:
             self.enterCommandMode()
-            message = b'ATDL0000'+address
+            message = b'ATDL'+bytes(address,'ascii')
             message+= b'\r'
             self.write(message)
             self.applyChanges()
@@ -234,10 +318,10 @@ class XbeeInitialization():
 
     def setTxPowerLevel(self, powerLevel):
         try:
-            if(powerLevel < 0 or powerLevel > 4):
+            if(powerLevel < b'0' or powerLevel > b'4'):
                 return False
             self.enterCommandMode()
-            message=(b'ATPL'+bytes(powerLevel,'ascii'))
+            message=(b'ATPL'+powerLevel)
             message+=b'\r'
             self.write(message)
             self.applyChanges()
@@ -310,17 +394,21 @@ class XbeeInitialization():
         frame = self.create16BitAddrFrame(data, address=address, mode=0, stringData=stringData)
         self.serialPort.write(frame)
 
-    def transparentTransmit(self, data):
-
+    def transparentTransmit(self, data, address):
+        if address == self.destAddr:
+            pass
+        else:
+            self.setDL(address)
         self.serialPort.write(data)
         self.serialPort.flush()
 
     def transparentRead(self, packetSize=32):
         return self.serialPort.read(packetSize)
-    
 
 
 
+
+'''
 def resetBaud():
     if sys.argv[2] == '-i':
         incrementArgs = 1
@@ -360,16 +448,7 @@ def testTransparentMode():
         else:
             print("error with xbee initial baud rate, exiting program")
     #Needs to 2 seoncds for radio to settle
-    time.sleep(1.1)
-    xbee.setMy16BitAddress(sys.argv[3+incrementArgs])
-    time.sleep(1.1)
-    xbee.setDH16Addr()
-    time.sleep(1.1)
-    xbee.enableTransparentMode()
-    time.sleep(1.1)
-    address = xbee.getMy16BitAddress()
-    time.sleep(1.1)
-    xbee.setDL(b'BBBB')
+    
 
     print("Xbee online @%s baud and addressed as %s" %(str(xbeeBaudRate).strip(), str(address).strip()))
     mode = input("(T)x or (R)x")
@@ -464,3 +543,5 @@ def test():
 
 if __name__ == '__main__':
     testTransparentMode()
+
+'''

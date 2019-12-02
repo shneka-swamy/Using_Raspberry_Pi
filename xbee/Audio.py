@@ -2,7 +2,7 @@ import pyaudio
 import wave
 import sys
 
-CHUNK = 512
+CHUNK = 100
 
 
 print(sys.argv)
@@ -22,7 +22,9 @@ stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
 data = wf.readframes(CHUNK)
 
 while data != '':
+    
     stream.write(data)
+
     data = wf.readframes(CHUNK)
 
 stream.stop_stream()
