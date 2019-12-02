@@ -84,7 +84,7 @@ class Xbee():
         if(not S1):
             self.enableS1Compatability()
             time.sleep(1.1)
-        xbee_1.setDH('00000000')
+        self.setDH('00000000')
         time.sleep(1.1)
 
 
