@@ -1,44 +1,19 @@
 from XbeeModule import Xbee
 
-
+import time
 import wave
 import argparse
 import pyaudio
-import scipy
+import numpy as np
+import scipy.signal as sps
+from scipy.io import wavfile
+import librosa
+from threading import Thread
 from digi.xbee.devices import *
 from digi.xbee.util import *
 from digi.xbee.exception import *
+import threading
 
-
-
-def audioTest():
-    audio_file = '../AudioFiles/CantinaBand3.wav'
-    CHUNK=100
-    wf = wave.open(audio_file, 'rb')
-
-    p = pyaudio.PyAudio()
-    #Stream creates a stream of audio data that can be transmitted as a series of strings.
-    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                channels=wf.getnchannels(),
-                rate=wf.getframerate(),
-                output=True)
-
-    data = wf.readframes(CHUNK)
-    messageNum = 1
-    print(data)
-    while len(data) > 0:
-        #print(messageNum)
-        messageNum += 1
-        stream.write(data)
-        data = wf.readframes(CHUNK)
-
-    print(messageNum)
-    # stop stream 
-    stream.stop_stream()
-    stream.close()
-
-    # close PyAudio 
-    p.terminate()
 
 
 def str2bool(v):
@@ -62,124 +37,132 @@ def main():
     parser.add_argument('--s1', action='store', dest='S1Mode', type=str2bool, default=False)
     args = parser.parse_args()
 
-    xbee = Xbee(args.portName, args.baudRate, args.address, args.apiMode, args.S1Mode)
+    xbee = Xbee(args.portName, args.baudRate, args.address, apiMode=args.apiMode, S1=args.S1Mode)
    
 
     address = xbee.getMy16BitAddress()
     print(f"Online @ {address}")
-    
-    if args.address == 'AAAA':
-        #remote_device ="0013A200419B5611"
-        remote_device = "000000000000BBBB"
-
-        xbee.setDH(remote_device[0:8])
-        xbee.setDL(remote_device[8:])
-
-    else:
-        remote_device = "000000000000AAAA"
-        xbee.setDH(remote_device[0:8])
-        xbee.setDL(remote_device[8:])
 
     
-
-    CHUNK=15
 
     mode = input("(T)x or (R)x")
 
-    data = [i for i in range(CHUNK)]
-    data  = bytes(data)
+    #data = [i for i in range(CHUNK)]
+    #data  = bytes("i", "ascii")
     
 
+    FORMAT = 8
+    CHANNELS = 1
+    RATE = 8000
+    CHUNK=512
+    RECORD_SECONDS = 30
+  
+
+   
+    
     if mode == "T":
-        '''
-        audio_file = '../AudioFiles/CantinaBand3.wav'
-        wf = wave.open(audio_file, 'rb')
-
-        p = pyaudio.PyAudio()
-        #Stream creates a stream of audio data that can be transmitted as a series of strings.
-        stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
-                    output=True)
         
-        messageNum = 1
-        data = wf.readframes(CHUNK)
-        print(len(data))
-        #data = scipy.signal.resample(data, 8000)
-        while len(data) > 0:
-            xbee.transparentTransmit(data, remote_device[8:])
-            print(messageNum)
-            messageNum += 1
-            data = wf.readframes(CHUNK)
-        time.sleep(2.5)
-        xbee.transparentTransmit(b'END', remote_device[8:])
+        audio_file = '../AudioFiles/PinkPanther30_8khz.wav'
+        wf = wave.open(audio_file, 'rb')
+        
 
-        # stop stream 
-        stream.stop_stream()
-        stream.close()
+ 
+        
+        p = pyaudio.PyAudio()
+        #print(f"sample rate {s}")
+        print(f"width {p.get_format_from_width(wf.getsampwidth())}")
+        print(f"channels {wf.getnchannels()}")
+        print(f"framerate {wf.getframerate()}")
+
+        
+        #Stream creates a stream of audio data that can be transmitted as a series of strings.
+        
+        outStream = p.open(format=FORMAT,
+                    channels=CHANNELS,
+                    rate=RATE,
+                    output=True)
+
+        song = []
+        
+        data = wf.readframes(CHUNK)
+        while len(data) > 0:
+            song.append(data)
+            data = wf.readframes(CHUNK)
+        
+        outStream.stop_stream()
+        outStream.close()    
+
+        messageNum = 1
+        for packet in song:
+            xbee.transmit(packet, "BBBB")
+            print(f"{messageNum}  {len(packet)}")
+            messageNum += 1
+
 
         # close PyAudio 
         p.terminate()
-        '''
-        for repeats in range(1000):
-            xbee.transparentTransmit(data, remote_device[8:])
-            print(repeats)
-        xbee.transparentTransmit(b'END', remote_device[8:])
+
         
 
     else:
 
-       
+        audio = pyaudio.PyAudio()
+        
 
+        def callback(in_data, frame_count, time_info, status):
+            stream.write(frames)
+            return (frames, pyaudio.paContinue)
+ 
+        # start Recording
+        
+        stream = audio.open(format=FORMAT, 
+                        channels=CHANNELS,
+                        rate=RATE, 
+                        output=True)
+        
+        
         data = b''
+        startTime = time.time()
         print("Entered Rx mode")
         messageNum = 0
-        startTime = 0
-        while(True):
+        activeTransmission = False
+        frames = b''
+        def playAudio(audioClip):
+            stream.write(audioClip)
+
+            
+
+        while activeTransmission or messageNum == 0:
+            data = xbee.read(packetSize=CHUNK*2)
+            if len(data) != 0 and messageNum == 0:
+                activeTransmission = True
+            elif activeTransmission and len(data) == 0:
+                activeTransmission = False
+                break
+            elif len(data) == 0: continue
+            if activeTransmission:
+                if len(frames) > RATE:
+                    print(threading.active_count())
+                    t = Thread(target=playAudio, args=(frames,))
+                    t.start()
+                    frames = b''
+            frames += data
             messageNum+=1
-            message = xbee.transparentRead(packetSize=CHUNK)
-            if startTime == 0:
-                startTime = time.time()
-            if message:
-                if message == b'END':
-                    break
-                if len(message) != CHUNK:
-                    print(f"error with message {messageNum}")
-                print(messageNum)
-                data += message
+            
+            print(f"{messageNum} {len(data)} {len(frames)} {xbee.serialPort.in_waiting}")
+        print ("finished recording")
+
 
 
         endTime = time.time()
         print("Elapsed time: %s" %(endTime - startTime))
-        print(len(data))
-        print(f"data rate achieved {len(data)/ (endTime - startTime) * 8 / 1000}")
+        print(f"total size {len(frames)*len(data)}")
+        print(f"data rate achieved {(len(frames)*len(data))/ (endTime - startTime) * 8 / 1000}")
 
-        
-        
-        '''
-        audio_file = '../AudioFiles/CantinaBand3.wav'
-        wf = wave.open(audio_file, 'rb')
-
-        p = pyaudio.PyAudio()
-        #Stream creates a stream of audio data that can be transmitted as a series of strings.
-        stream = stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
-                    output=True)
-
-
-        stream.write(data)
-
-
-
-        # stop stream 
-        stream.stop_stream()
         stream.close()
+        audio.terminate()
 
-        # close PyAudio 
-        p.terminate()
-
-        '''
+        
    
 
 
