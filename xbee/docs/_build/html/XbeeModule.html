@@ -227,7 +227,7 @@ message – explanation of the error</p>
 <dt id="XbeeModule.Xbee.enterCommandMode">
 <code class="sig-name descname">enterCommandMode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.enterCommandMode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes +++ to device
-:Warning resets the input buffer</p>
+Warning:: resets the input buffer</p>
 </dd></dl>
 
 <dl class="method">
@@ -240,8 +240,8 @@ message – explanation of the error</p>
 <dt id="XbeeModule.Xbee.flowControl">
 <code class="sig-name descname">flowControl</code><span class="sig-paren">(</span><em class="sig-param">enableFlag</em><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.flowControl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enables or disables RTS/CTS flow control. See page 43
-:params enableFlag (boolen) True-&gt; enable flow control
-False -&gt; disable flow control</p>
+:params: enableFlag (boolen) 1.True-&gt; enable flow control
+2. False -&gt; disable flow control</p>
 </dd></dl>
 
 <dl class="method">
@@ -258,7 +258,8 @@ False -&gt; disable flow control</p>
 <dl class="method">
 <dt id="XbeeModule.Xbee.getDestAddr">
 <code class="sig-name descname">getDestAddr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.getDestAddr" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns desination address in the form of bytes</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="XbeeModule.Xbee.getMy16BitAddress">
@@ -288,10 +289,12 @@ False -&gt; disable flow control</p>
 <dt id="XbeeModule.Xbee.setBaud115k">
 <code class="sig-name descname">setBaud115k</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.setBaud115k" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets buard rate to 250000 
-:Warning enters command mode automatically
-:returns 0 -&gt; error entering command mode, 1 -&gt; Other error occured,</p>
+:Warning:: enters command mode automatically
+:returns: 1. 0 -&gt; error entering command mode, 2. 1 -&gt; Other error occured,</p>
 <blockquote>
-<div><p>None -&gt; No error occured</p>
+<div><ol class="arabic simple" start="3">
+<li><p>None -&gt; No error occured</p></li>
+</ol>
 </div></blockquote>
 </dd></dl>
 
@@ -354,7 +357,8 @@ False -&gt; disable flow control</p>
 <dl class="method">
 <dt id="XbeeModule.Xbee.transmit">
 <code class="sig-name descname">transmit</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">address</em><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.transmit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Transmits data to address specified. Changes address if it does not match</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="XbeeModule.Xbee.transmitSerialData">
@@ -368,12 +372,12 @@ False -&gt; disable flow control</p>
 <dd><dl class="simple">
 <dt>Check response from Xbee device</dt><dd><dl class="field-list simple">
 <dt class="field-odd">return</dt>
-<dd class="field-odd"><p>(boolean) True-&gt;’OK</p>
+<dd class="field-odd"><p>(boolean) 1. True-&gt;’OK</p>
 </dd>
 </dl>
 </dd>
 </dl>
-<p>‘ False-&gt; ‘ERROR
+<p>‘ 2. False-&gt; ‘ERROR
 ‘</p>
 </dd></dl>
 
@@ -381,9 +385,17 @@ False -&gt; disable flow control</p>
 <dt id="XbeeModule.Xbee.write">
 <code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param">message</em><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes and flushes message to xbee deives. Waits for response from device</p>
-<p>:param message (bytes)
-:return: none
-:raises CommunicationError</p>
+<dl class="field-list simple">
+<dt class="field-odd">Param</dt>
+<dd class="field-odd"><p>message (bytes)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>none</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p>CommunicationError</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">

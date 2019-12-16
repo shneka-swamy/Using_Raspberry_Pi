@@ -93,7 +93,7 @@ class Xbee():
     #Command mode helper functions
     def enterCommandMode(self):
         """ Writes +++ to device
-        :Warning resets the input buffer
+        Warning:: resets the input buffer
         """
         self.serialPort.reset_input_buffer()
         self.write(b'+++')
@@ -118,9 +118,9 @@ class Xbee():
     def write(self, message):
         """ Writes and flushes message to xbee deives. Waits for response from device
 
-        :param message (bytes)
+        :param: message (bytes)
         :return: none
-        :raises CommunicationError
+        :raises: CommunicationError
         """
         self.serialPort.write(message)
         self.serialPort.flush()
@@ -130,7 +130,7 @@ class Xbee():
 
     def validateCommandResponse(self):
         """Check response from Xbee device
-        :return: (boolean) True->'OK\r' False-> 'ERROR\r'
+        :return: (boolean) 1. True->'OK\r' 2. False-> 'ERROR\r'
         """
         line = self.serialPort.read_until(b'\r')
         return b'OK' in line
@@ -177,9 +177,9 @@ class Xbee():
 
     def setBaud115k(self):
         """Sets buard rate to 250000 
-        :Warning enters command mode automatically
-        :returns 0 -> error entering command mode, 1 -> Other error occured,
-         None -> No error occured
+        :Warning:: enters command mode automatically
+        :returns: 1. 0 -> error entering command mode, 2. 1 -> Other error occured,
+         3. None -> No error occured
          """
         try:
             self.enterCommandMode()
@@ -320,6 +320,7 @@ class Xbee():
 
 
     def getDestAddr(self):
+        """Returns desination address in the form of bytes"""
         try:
             self.serialPort.write(b'ATDL\r')
             address = self.serialPort.read_until(b'\r')
@@ -330,8 +331,8 @@ class Xbee():
     
     def flowControl(self, enableFlag):
         """Enables or disables RTS/CTS flow control. See page 43
-        :params enableFlag (boolen) True-> enable flow control
-        False -> disable flow control
+        :params: enableFlag (boolen) 1.True-> enable flow control
+        2. False -> disable flow control
         """
         try:
             if(enableFlag):
@@ -429,6 +430,8 @@ class Xbee():
         self.serialPort.write(frame)
 
     def transmit(self, data, address):
+        """Transmits data to address specified. Changes address if it does not match
+        """
         
         if address == self.destAddr:
             pass
