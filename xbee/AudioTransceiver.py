@@ -1,4 +1,5 @@
-from XbeeModule import Xbee
+
+from XbeeModule import *
 
 import time
 import wave
@@ -38,17 +39,23 @@ def main():
     args = parser.parse_args()
 
     xbee = Xbee(args.portName, args.baudRate, args.address, apiMode=args.apiMode, S1=args.S1Mode)
-   
+    address = ""
+    
+    def getAddress():
+        try:
+            return xbee.getMy16BitAddress()
+        except CommunicationException as err:
+            time.sleep(2)
+            getAddress()
 
-    address = xbee.getMy16BitAddress()
-    print(f"Online @ {address}")
+    
+
+    print(f"Online @ {getAddress()}")
 
     
 
     mode = input("(T)x or (R)x")
 
-    #data = [i for i in range(CHUNK)]
-    #data  = bytes("i", "ascii")
     
 
     FORMAT = 8
@@ -62,12 +69,9 @@ def main():
     
     if mode == "T":
         
-        audio_file = '../AudioFiles/PinkPanther30_8khz.wav'
+        audio_file = '../AudioFiles/StarWars60_8kHz.wav'
         wf = wave.open(audio_file, 'rb')
-        
 
- 
-        
         p = pyaudio.PyAudio()
         #print(f"sample rate {s}")
         print(f"width {p.get_format_from_width(wf.getsampwidth())}")
@@ -127,6 +131,7 @@ def main():
         messageNum = 0
         activeTransmission = False
         frames = b''
+
         def playAudio(audioClip):
             stream.write(audioClip)
 
@@ -142,14 +147,13 @@ def main():
             elif len(data) == 0: continue
             if activeTransmission:
                 if len(frames) > RATE:
-                    print(threading.active_count())
                     t = Thread(target=playAudio, args=(frames,))
                     t.start()
                     frames = b''
             frames += data
             messageNum+=1
             
-            print(f"{messageNum} {len(data)} {len(frames)} {xbee.serialPort.in_waiting}")
+            print(f"{messageNum}  {len(frames)}")
         print ("finished recording")
 
 

@@ -34,9 +34,7 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="microphone module" href="microphone.html" />
-    <link rel="prev" title="XbeeInitialization module" href="XbeeInitialization.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -84,26 +82,11 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">xbee</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="Audio.html">Audio module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="AudioTransceiver.html">AudioTransceiver module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Radio.html">Radio module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Rx_API.html">Rx_API module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Tx_API.html">Tx_API module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Xbee.html">Xbee module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="XbeeInitialization.html">XbeeInitialization module</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">XbeeModule module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="microphone.html">microphone module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="read_data.html">read_data module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="send_data.html">send_data module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="simpleDemo.html">simpleDemo module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="transceiver_test.html">transceiver_test module</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">XbeeModule module</a></li>
 </ul>
-</li>
-</ul>
-
+</div>
             
           
         </div>
@@ -146,8 +129,6 @@
   <ul class="wy-breadcrumbs">
     
       <li><a href="index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="modules.html">xbee</a> &raquo;</li>
         
       <li>XbeeModule module</li>
     
@@ -192,6 +173,10 @@ message – explanation of the error</p>
 <dt id="XbeeModule.Xbee">
 <em class="property">class </em><code class="sig-prename descclassname">XbeeModule.</code><code class="sig-name descname">Xbee</code><span class="sig-paren">(</span><em class="sig-param">portName</em>, <em class="sig-param">baudrate</em>, <em class="sig-param">address</em>, <em class="sig-param">apiMode=False</em>, <em class="sig-param">S1=False</em>, <em class="sig-param">timeout=2</em><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for handling XBee functionality
+:param portName: USB port or otherwise that radio is connected
+:param baudrate: desired radio baud rate
+:param address: 16-bit address to communicate with radio</p>
 <dl class="method">
 <dt id="XbeeModule.Xbee.applyChanges">
 <code class="sig-name descname">applyChanges</code><span class="sig-paren">(</span><em class="sig-param">baudChange=None</em><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.applyChanges" title="Permalink to this definition">¶</a></dt>
@@ -227,13 +212,14 @@ message – explanation of the error</p>
 <dt id="XbeeModule.Xbee.enterCommandMode">
 <code class="sig-name descname">enterCommandMode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.enterCommandMode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes +++ to device
-Warning:: resets the input buffer</p>
+:rasies: CommunicationException</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="XbeeModule.Xbee.exitCommandMode">
 <code class="sig-name descname">exitCommandMode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.exitCommandMode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes ATCN</p>
+<dd><p>Writes ATCN
+rasies: CommunicationError</p>
 </dd></dl>
 
 <dl class="method">
@@ -264,7 +250,10 @@ Warning:: resets the input buffer</p>
 <dl class="method">
 <dt id="XbeeModule.Xbee.getMy16BitAddress">
 <code class="sig-name descname">getMy16BitAddress</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.getMy16BitAddress" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns 16-bit address
+:return: 16-bit address in bytes
+:rasies: communicationException if error occurs</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="XbeeModule.Xbee.packetizationTimeout">
@@ -351,13 +340,15 @@ Warning:: resets the input buffer</p>
 <dt id="XbeeModule.Xbee.setTxPowerLevel">
 <code class="sig-name descname">setTxPowerLevel</code><span class="sig-paren">(</span><em class="sig-param">powerLevel</em><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.setTxPowerLevel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets Tx Power level
-:Params bytes in range 0-4</p>
+:param powerLevel: bytes in range 0-4</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="XbeeModule.Xbee.transmit">
 <code class="sig-name descname">transmit</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">address</em><span class="sig-paren">)</span><a class="headerlink" href="#XbeeModule.Xbee.transmit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transmits data to address specified. Changes address if it does not match</p>
+<dd><p>Transmits data to address specified. Changes address if it does not match
+:param data: bytes to be sent
+:address: 16-bit desination address</p>
 </dd></dl>
 
 <dl class="method">
@@ -418,15 +409,6 @@ Warning:: resets the input buffer</p>
            
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="microphone.html" class="btn btn-neutral float-right" title="microphone module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="XbeeInitialization.html" class="btn btn-neutral float-left" title="XbeeInitialization module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>

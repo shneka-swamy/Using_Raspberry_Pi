@@ -29,7 +29,12 @@ class CommunicationError(Error):
 
 
 class Xbee():
-
+    """
+    Class for handling XBee functionality
+    :param portName: USB port or otherwise that radio is connected
+    :param baudrate: desired radio baud rate
+    :param address: 16-bit address to communicate with radio
+    """
     def __init__(self, portName, baudrate, address, apiMode=False, S1=False, timeout=2):
         self.serialPort = serial.Serial(portName, baudrate, timeout=timeout, rtscts=True)
         
@@ -38,9 +43,12 @@ class Xbee():
         
     
         self.startDelimiter =  bytes([0x7E])
-        self.destAddr
+        self.destAddr = 0
+        self.desiredRate = baudrate
 
-
+        '''
+        Fixes baud rate to desired rate
+        '''
         xbeeBaudRate = self.getBaudRate()
         #Error occured configuring buad rate
         while(xbeeBaudRate == 0 or xbeeBaudRate == 1):
@@ -62,7 +70,16 @@ class Xbee():
             elif self.desiredRate == 115200:
                 self.setBaud115k()
         print(self.serialPort.baudrate)
-        self.enterCommandMode()
+        '''
+        Configured device for close range and s1's compatablility
+        '''
+        try:
+            self.enterCommandMode()
+        except CommunicationError as err:
+            time.sleep(2)
+            self.enterCommandMode()
+
+
         self.setMinGaurdTime()
         self.writeChange()
         self.applyChanges()
@@ -93,18 +110,20 @@ class Xbee():
     #Command mode helper functions
     def enterCommandMode(self):
         """ Writes +++ to device
-        Warning:: resets the input buffer
+        :rasies: CommunicationException
         """
         self.serialPort.reset_input_buffer()
         self.write(b'+++')
     
     def exitCommandMode(self):
-        """ Writes ATCN """
+        """ Writes ATCN
+        rasies: CommunicationError
+        """
         self.write(b'ATCN\r')
 
     def applyChanges(self, baudChange = None):
         """Applies changes with ATWR followed by ATAC
-        :Params buardRate(optional) Will change serial port baud rate
+        :param buardRate:(optional) Will change serial port baud rate
         """
         self.write(b'ATWR\r')
         self.write(b'ATAC\r')
@@ -118,7 +137,7 @@ class Xbee():
     def write(self, message):
         """ Writes and flushes message to xbee deives. Waits for response from device
 
-        :param: message (bytes)
+        :param message: (bytes)
         :return: none
         :raises: CommunicationError
         """
@@ -307,16 +326,16 @@ class Xbee():
             return 
 
     def getMy16BitAddress(self):
-        try:
-            self.enterCommandMode()
-            self.serialPort.write(b'ATMY\r')
-            self.serialPort.flush()
-            address = self.serialPort.read_until(b'\r')
-            self.exitCommandMode()
-            return address
-        except CommunicationError as err:
-            print("Error in getting 16 bit addres caused by: %s"% err)
-            return 
+        """Returns 16-bit address
+        :return: 16-bit address in bytes
+        :rasies: communicationException if error occurs
+        """
+        self.enterCommandMode()
+        self.serialPort.write(b'ATMY\r')
+        self.serialPort.flush()
+        address = self.serialPort.read_until(b'\r')
+        self.exitCommandMode()
+        return address
 
 
     def getDestAddr(self):
@@ -349,7 +368,7 @@ class Xbee():
 
     def setTxPowerLevel(self, powerLevel):
         """Sets Tx Power level
-        :Params bytes in range 0-4
+        :param powerLevel: bytes in range 0-4
         """
         try:
             if(powerLevel < b'0' or powerLevel > b'4'):
@@ -431,6 +450,8 @@ class Xbee():
 
     def transmit(self, data, address):
         """Transmits data to address specified. Changes address if it does not match
+        :param data: bytes to be sent
+        :address: 16-bit desination address
         """
         
         if address == self.destAddr:
