@@ -9,14 +9,15 @@ class Irobot():
         # Defaults set to COM6 and 57600 baud. 
         # The robot should always be run from 57600 baud unless not possible with the hardware.
         # COM6 would be a default on windows. Linux will require some '/dev/ttyUSB[port]'.
-        self.ser = serial.Serial(port='COM6', baudrate=57600)
+        self.ser = serial.Serial(port='COM3', baudrate=57600)
+        self.safe_start()
         
 
     # Starts the robot up in safe mode to prevent overheating, crashes, etc. Gives the robot time to sleep before operation.
     # As you may notice, the way all of these methods work is through sending serial over UART to the robot.
     def safe_start(self):
-        ser.write(b'\x80')
-        ser.write(b'\x84')
+        self.ser.write(b'\x80')
+        self.ser.write(b'\x84')
         time.sleep(3)
 
     #Takes in a distance and a speed to move the robot. Distance can be positive or negative. Speed should be positive.
@@ -59,16 +60,27 @@ class Irobot():
         time.sleep(seconds)
         self.ser.write(b'\x89\x00\x00\x00\x00')
 
+    #Use negative degrees to go left, positive degrees to go right.
     #True is left, false is right. Turns 90 degrees.
-    def turn(self, left_right):
+    def turn(self, degrees):
         array = bytearray()
         array.append(137)
-        if (left_right):
-            array.append(0)
-            array.append(200)
+        if (degrees < 0):
+            array.append(128)
+            degrees = abs(degrees)
+            newDeg = int(55 / (90/degrees))
+            array.append(newDeg)            
         else:
-            array.append(255)
-            array.append(55)
+            array.append(0)
+            newDeg = int(200 / (90/degrees))
+            array.append(newDeg)
+
+        # if (left_right):
+        #     array.append(0)
+        #     array.append(200)
+        # else:
+        #     array.append(255)
+        #     array.append(55)
         array.append(0)
         array.append(0)
 
@@ -76,34 +88,54 @@ class Irobot():
         time.sleep(1.1)
         self.ser.write(b'\x89\x00\x00\x00\x00')
 
-def manual_control():
+    def GetData(self):
+        array = bytearray()
+        array.append(148) #Opcode to recieve packets from the iRobot
+        array.append(2) #Recieve two packets
+        array.append(19) #Distance
+        array.append(20) #Angle
+        self.ser.write(array)
 
+        newData = self.ser.read(9)
+
+        time.sleep(1.1)
+        self.ser.write(b'\x89\x00\x00\x00\x00')
+
+
+def manual_control():
+    robot = Irobot('COM3', 57600)
     check = 0
-    while (check != 5):
-        print("Enter a command: (1=forward, 2=backward, 3=turn left, 4=turn_right, 5=exit to key commands")
+    while (check != 6):
+        print("Enter a command: (1=forward, 2=backward, 3=turn left, 4=turn_right, 5=Get Data, 6=exit to key commands")
         check = int(input())
         if (check == 1):
-            move(200,200, ser)
+            robot.move(200,200)
         elif (check == 2):
-            move(-200,200, ser)
+            robot.move(-200,200)
         elif (check == 3):
-            turn(True, ser)
+            robot.turn(-15)
         elif (check == 4):
-            turn(False, ser)
+            robot.turn(15)
+        elif (check == 5):
+            test = robot.GetData().newData
+            print(test)
         else:
             break
 
     print ("Use Key Controls (WASD) to move and E to exit.")
     while (True):
         if (keyboard.is_pressed('w')):
-            move(200,200, ser)
+            robot.move(200,200)
         elif (keyboard.is_pressed('s')):
-            move(-200,200, ser)
+            robot.move(-200,200)
         elif (keyboard.is_pressed('a')):
-            turn(True, ser)
+            robot.turn(-15)
         elif (keyboard.is_pressed('d')):
-            turn(False, ser)
+            robot.turn(15)
         elif (keyboard.is_pressed('e')):
             break
 
-    ser.close()
+    robot.ser.close()
+
+if __name__ == '__main__':
+    manual_control()
