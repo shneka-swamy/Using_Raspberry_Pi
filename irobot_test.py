@@ -90,7 +90,7 @@ class Irobot():
 
     def GetData(self):
         array = bytearray()
-        array.append(148) #Opcode to recieve packets from the iRobot
+        array.append(149) #Opcode to recieve packets from the iRobot
         array.append(2) #Recieve two packets
         array.append(19) #Distance
         array.append(20) #Angle
@@ -100,6 +100,7 @@ class Irobot():
 
         time.sleep(1.1)
         self.ser.write(b'\x89\x00\x00\x00\x00')
+        return newData
 
 
 def manual_control():
@@ -117,7 +118,7 @@ def manual_control():
         elif (check == 4):
             robot.turn(15)
         elif (check == 5):
-            test = robot.GetData().newData
+            test = robot.GetData()
             print(test)
         else:
             break
