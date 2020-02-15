@@ -1,6 +1,9 @@
 import serial
 import time
 import keyboard
+import random
+import math
+import trig
 
 class Irobot():
     pass
@@ -66,10 +69,11 @@ class Irobot():
         array = bytearray()
         array.append(137)
         if (degrees < 0):
-            array.append(128)
+            newDeg = int((255+56) / (90/degrees))
+            lowByte = int(newDeg - 255)
+            array.append(255)
             degrees = abs(degrees)
-            newDeg = int(55 / (90/degrees))
-            array.append(newDeg)            
+            array.append(lowByte)            
         else:
             array.append(0)
             newDeg = int(200 / (90/degrees))
@@ -89,6 +93,7 @@ class Irobot():
         self.ser.write(b'\x89\x00\x00\x00\x00')
 
     def GetData(self):
+        '''Returns data in binary for the distance the iRobot has gone and the angle at which it has turned in that order'''
         array = bytearray()
         array.append(149) #Opcode to recieve packets from the iRobot
         array.append(2) #Recieve two packets
@@ -101,6 +106,57 @@ class Irobot():
         time.sleep(1.1)
         self.ser.write(b'\x89\x00\x00\x00\x00')
         return newData
+
+    def GoRandom(self, distFromOrigin, angleFromOrigin, distLimit):
+        '''Takes the distance from the origin of the circle and the radius limit the iRobot is allowed to go'''
+        xypair = trig.PolarToCartesian(distFromOrigin, angleFromOrigin)
+        x = xypair[0]
+        y = xypair[1]
+        while True:
+            rawData = self.GetData()
+            distance = (rawData << 24) & 0xFFFF00
+            angle = rawData << 56
+            xypair = trig.PolarToCartesian(distFromOrigin + distance, angleFromOrigin + angle)
+            x = xypair[0]
+            y = xypair[1]
+            if x >= 10000:
+                if angle > 180:
+                    self.turn(-(angle % 180))
+                    self.move(-500, 20)
+                elif angle < 180:
+                    self.turn(angle % 180)
+                    self.move(-500, 20)
+                else:
+                    self.move(-500, 20)
+            elif x <= 10000:
+                if angle > 0:
+                    self.turn(-angle)
+                    self.move(-500, 20)
+                else:
+                    self.move(-500, 20)
+            if y >= 10000:
+                if angle > 90:
+                    self.turn(-(angle % 90))
+                    self.move(-500, 20)
+                elif angle < 90:
+                    self.turn(angle % 90)
+                    self.move(-500, 20)
+                else:
+                    self.move(-500, 20)
+            elif y <= 10000:
+                if angle > 270:
+                    self.turn(-(angle % 270))
+                    self.move(-500, 20)
+                elif angle < 270:
+                    self.turn(angle % 270)
+                    self.move(-500, 20)
+                else:
+                    self.move(-500, 20)
+            else:
+                self.trun(random.randint(0,359))
+                self.move(random.randint(0,200),random.randint(0,200))
+
+
 
 
 def manual_control():

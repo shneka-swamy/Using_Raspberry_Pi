@@ -2,4 +2,6 @@ Cannot get permission to use /dev/ttyS0 on Rob's Pi 3.
 	*Needs furthur investigate
 	*Tried chmod
 	*Adding user to dialout
+
+Can "technically" get data from the iRobot, however no matter how much it moves there is no change in the data recieved.
 	
