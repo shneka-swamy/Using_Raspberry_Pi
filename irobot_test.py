@@ -12,7 +12,7 @@ class Irobot():
         # Defaults set to COM6 and 57600 baud. 
         # The robot should always be run from 57600 baud unless not possible with the hardware.
         # COM6 would be a default on windows. Linux will require some '/dev/ttyUSB[port]'.
-        self.ser = serial.Serial(port='COM3', baudrate=57600)
+        self.ser = serial.Serial(port='COM6', baudrate=57600)
         self.safe_start()
         
 
@@ -107,54 +107,48 @@ class Irobot():
         self.ser.write(b'\x89\x00\x00\x00\x00')
         return newData
 
-    def GoRandom(self, distFromOrigin, angleFromOrigin, distLimit):
-        '''Takes the distance from the origin of the circle and the radius limit the iRobot is allowed to go'''
-        xypair = trig.PolarToCartesian(distFromOrigin, angleFromOrigin)
-        x = xypair[0]
-        y = xypair[1]
+    def GoRandom(self, xOrigin, yOrigin, angleOfRobot, distLimit):
+        '''Takes the distance from the origin of the circle and the radius limit the iRobot is allowed to go as well as the robots angle with respect to the origin's coordinate system'''
+        x = xOrigin
+        y = yOrigin
+        angle = angleOfRobot
+
         while True:
-            rawData = self.GetData()
-            distance = (rawData << 24) & 0xFFFF00
-            angle = rawData << 56
-            xypair = trig.PolarToCartesian(distFromOrigin + distance, angleFromOrigin + angle)
-            x = xypair[0]
-            y = xypair[1]
-            if x >= 10000:
-                if angle > 180:
-                    self.turn(-(angle % 180))
-                    self.move(-500, 20)
-                elif angle < 180:
-                    self.turn(angle % 180)
-                    self.move(-500, 20)
-                else:
-                    self.move(-500, 20)
-            elif x <= 10000:
-                if angle > 0:
-                    self.turn(-angle)
-                    self.move(-500, 20)
-                else:
-                    self.move(-500, 20)
-            if y >= 10000:
-                if angle > 90:
-                    self.turn(-(angle % 90))
-                    self.move(-500, 20)
-                elif angle < 90:
-                    self.turn(angle % 90)
-                    self.move(-500, 20)
-                else:
-                    self.move(-500, 20)
-            elif y <= 10000:
-                if angle > 270:
-                    self.turn(-(angle % 270))
-                    self.move(-500, 20)
-                elif angle < 270:
-                    self.turn(angle % 270)
-                    self.move(-500, 20)
-                else:
-                    self.move(-500, 20)
+            if x >= distLimit:
+                self.turn(angle + 180)
+                self.move(500, 20)
+                angle = 180
+                x -= 500
+            elif x <= -distLimit:
+                self.turn(angle)
+                self.move(500, 20)
+                angle = 0
+                x += 500
+            if y >= distLimit:
+                self.turn(angle + 90)
+                self.move(500, 20)
+                angle = 270
+                y -= 500
+            elif y <= -distLimit:
+                self.turn(angle - 90)
+                self.move(500, 20)
+                angle = 90
+                y += 500
             else:
-                self.trun(random.randint(0,359))
-                self.move(random.randint(0,200),random.randint(0,200))
+                randTurn = random.randint(0,359)
+                self.trun(randTurn)
+                angle += randTurn
+                if angle < 0:
+                    while angle < 0:
+                        angle = angle + 360
+                elif angle > 360:
+                    angle = angle % 360
+                randDist = random.randint(0,200)
+                randSpeed = random.randint(0,200)
+                self.move(randDist, randSpeed)
+                xypair = trig.PolarToCartesian(randDist, angle) # Get the x and y coordinates from the angle and the distance traveled.
+                x += xypair[0]
+                y += xypair[1]
 
 
 
@@ -163,7 +157,7 @@ def manual_control():
     robot = Irobot('COM3', 57600)
     check = 0
     while (check != 6):
-        print("Enter a command: (1=forward, 2=backward, 3=turn left, 4=turn_right, 5=Get Data, 6=exit to key commands")
+        print("Enter a command: (1=forward, 2=backward, 3=turn left, 4=turn_right, 5=Get Data, 6=Random Movement with Center Default, 7=Random Movement w/ custom args, 8=exit to key commands")
         check = int(input())
         if (check == 1):
             robot.move(200,200)
@@ -176,6 +170,14 @@ def manual_control():
         elif (check == 5):
             test = robot.GetData()
             print(test)
+        elif (check == 6):
+            robot.GoRandom(0, 0, 90, 10000)
+        elif (check == 7):
+            xOrg = input("What is the initial x coordinate?: ")
+            yOrg = input("What is the initial y coordinate?: ")
+            angle = input("What angle is the robot at? (right being 0 degrees): ")
+            dist = input("What is the robots radius limit? (in mm): ")
+            robot.GoRandom(xOrg, yOrg, angle, dist)
         else:
             break
 
