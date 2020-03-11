@@ -75,9 +75,14 @@ class Irobot():
             degrees = abs(degrees)
             array.append(lowByte)            
         else:
-            array.append(0)
             newDeg = int(200 / (90/degrees))
-            array.append(newDeg)
+            if newDeg < 255 and newDeg >= 0:
+                array.append(0)
+                array.append(newDeg)
+            else:
+                temp = newDeg % 255
+                array.append(temp)
+                array.append(255)
 
         # if (left_right):
         #     array.append(0)
@@ -115,29 +120,29 @@ class Irobot():
 
         while True:
             if x >= distLimit:
-                self.turn(angle + 180)
+                self.turn(angle)
                 self.move(500, 20)
                 angle = 180
                 x -= 500
             elif x <= -distLimit:
-                self.turn(angle)
+                self.turn(angle + 180)
                 self.move(500, 20)
                 angle = 0
                 x += 500
             if y >= distLimit:
-                self.turn(angle + 90)
+                self.turn(angle - 90)
                 self.move(500, 20)
                 angle = 270
                 y -= 500
             elif y <= -distLimit:
-                self.turn(angle - 90)
+                self.turn(angle + 90)
                 self.move(500, 20)
                 angle = 90
                 y += 500
             else:
                 randTurn = random.randint(0,359)
-                self.trun(randTurn)
-                angle -= randTurn
+                self.turn(randTurn)
+                angle += randTurn
                 if angle < 0:
                     while angle < 0:
                         angle = angle + 360
@@ -166,7 +171,7 @@ def manual_control():
         elif (check == 3):
             robot.turn(-15)
         elif (check == 4):
-            robot.turn(15)
+            robot.turn(30)
         elif (check == 5):
             test = robot.GetData()
             print(test)
