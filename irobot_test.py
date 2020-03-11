@@ -12,7 +12,7 @@ class Irobot():
         # Defaults set to COM6 and 57600 baud. 
         # The robot should always be run from 57600 baud unless not possible with the hardware.
         # COM6 would be a default on windows. Linux will require some '/dev/ttyUSB[port]'.
-        self.ser = serial.Serial(port='COM6', baudrate=57600)
+        self.ser = serial.Serial(port='COM3', baudrate=57600)
         self.safe_start()
         
 
@@ -137,7 +137,7 @@ class Irobot():
             else:
                 randTurn = random.randint(0,359)
                 self.trun(randTurn)
-                angle += randTurn
+                angle -= randTurn
                 if angle < 0:
                     while angle < 0:
                         angle = angle + 360
