@@ -36,6 +36,7 @@ class Irobot():
 	def append_time(self, timeToAppend):
 		self.running = True
 		self.timeToStop = time.time() + timeToAppend
+		print("I appended to time", self.timeToStop)
 
 	def check_time_expired(self):
 		if time.time() >= self.timeToStop:
